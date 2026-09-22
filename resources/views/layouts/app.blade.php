@@ -43,6 +43,15 @@
                                 <i class="size-4" data-lucide="arrow-right"></i>
                             </a>
                         @else
+                            @if (auth()->user()->hasAnyRole('RENTER', 'LANDLORD'))
+                                <a
+                                    class="inline-flex min-h-11 items-center justify-center gap-2 rounded-control px-3 py-2 text-sm font-bold transition hover:bg-brand-50 hover:text-brand-800 {{ request()->routeIs('landlord.*') ? 'bg-brand-50 text-brand-800' : 'text-slate-600' }}"
+                                    href="{{ auth()->user()->hasRole('LANDLORD') ? route('landlord.listings.index') : route('landlord.listings.create') }}"
+                                >
+                                    <i class="size-[18px]" data-lucide="building-2"></i>
+                                    {{ __('ui.layout.landlord_listings') }}
+                                </a>
+                            @endif
                             <a
                                 class="inline-flex min-h-11 items-center justify-center gap-2 rounded-control px-3 py-2 text-sm font-bold transition hover:bg-brand-50 hover:text-brand-800 {{ request()->routeIs('profile.show') ? 'bg-brand-50 text-brand-800' : 'text-slate-600' }}"
                                 href="{{ route('profile.show') }}"
