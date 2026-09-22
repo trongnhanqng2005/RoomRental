@@ -1,0 +1,10 @@
+{
+    "Forbidden": "Bạn không có quyền truy cập",
+    "Not Found": "Không tìm thấy trang",
+    "Page Expired": "Phiên làm việc đã hết hạn",
+    "Payment Required": "Yêu cầu thanh toán",
+    "Server Error": "Lỗi máy chủ",
+    "Service Unavailable": "Dịch vụ tạm thời không khả dụng",
+    "Too Many Requests": "Quá nhiều yêu cầu",
+    "Unauthorized": "Chưa được xác thực"
+}

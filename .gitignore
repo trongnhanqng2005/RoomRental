@@ -28,3 +28,7 @@ Thumbs.db
 /.opencode/
 /AGENTS.md
 /CLAUDE.md
+/.playwright-mcp/
+/blob-report/
+/playwright-report/
+/test-results/
