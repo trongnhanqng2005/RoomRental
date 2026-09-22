@@ -22,6 +22,8 @@ return [
         'full_name' => 'họ và tên',
         'email' => 'email',
         'phone' => 'số điện thoại',
+        'contact_address' => 'địa chỉ liên hệ',
+        'zalo_number' => 'số Zalo',
         'password' => 'mật khẩu',
         'password_confirmation' => 'xác nhận mật khẩu',
     ],

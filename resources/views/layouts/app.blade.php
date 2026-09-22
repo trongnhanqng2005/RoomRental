@@ -43,9 +43,14 @@
                                 <i class="size-4" data-lucide="arrow-right"></i>
                             </a>
                         @else
-                            <span class="px-3 py-2 text-sm font-semibold text-slate-600">
-                                {{ auth()->user()->profile?->full_name ?? __('ui.layout.account') }}
-                            </span>
+                            <a
+                                class="inline-flex min-h-11 items-center justify-center gap-2 rounded-control px-3 py-2 text-sm font-bold transition hover:bg-brand-50 hover:text-brand-800 {{ request()->routeIs('profile.show') ? 'bg-brand-50 text-brand-800' : 'text-slate-600' }}"
+                                href="{{ route('profile.show') }}"
+                                @if (request()->routeIs('profile.show')) aria-current="page" @endif
+                            >
+                                <i class="size-[18px]" data-lucide="user-round"></i>
+                                {{ __('ui.layout.profile') }}
+                            </a>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <x-ui.button class="w-full lg:w-auto" type="submit" variant="secondary">{{ __('ui.actions.logout') }}</x-ui.button>
