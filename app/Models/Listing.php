@@ -72,6 +72,11 @@ class Listing extends Model
         return $this->belongsTo(ListingModeration::class, 'current_moderation_id');
     }
 
+    public function viewingSlots(): HasMany
+    {
+        return $this->hasMany(ViewingSlot::class);
+    }
+
     protected function casts(): array
     {
         return [

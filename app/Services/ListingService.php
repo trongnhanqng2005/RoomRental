@@ -19,6 +19,8 @@ use Throwable;
 
 class ListingService
 {
+    public function __construct(private AppointmentService $appointmentService) {}
+
     /**
      * @param  array<string, mixed>  $data
      */
@@ -129,13 +131,22 @@ class ListingService
         return $updatedListing;
     }
 
-    public function updateOccupancy(Listing $listing, string $status): void
+    public function updateOccupancy(Listing $listing, string $status, User $actor): void
     {
-        DB::transaction(function () use ($listing, $status): void {
+        $notifications = DB::transaction(function () use ($listing, $status, $actor): array {
             $lockedListing = Listing::query()->lockForUpdate()->findOrFail($listing->id);
+            $wasRented = $lockedListing->occupancy_status === 'RENTED';
             $lockedListing->occupancy_status = $status;
             $lockedListing->save();
+
+            if ($status === 'RENTED' && ! $wasRented) {
+                return $this->appointmentService->autoCancelFutureForRentedListing($lockedListing, $actor);
+            }
+
+            return [];
         });
+
+        $this->appointmentService->notifyRentedAppointments($notifications);
     }
 
     public function updateVisibility(Listing $listing, string $status): void

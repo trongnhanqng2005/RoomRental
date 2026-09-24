@@ -42,6 +42,11 @@ class User extends Authenticatable
         return $this->hasMany(Listing::class, 'landlord_id');
     }
 
+    public function appointments(): HasMany
+    {
+        return $this->hasMany(Appointment::class, 'renter_id');
+    }
+
     public function favorites(): BelongsToMany
     {
         return $this->belongsToMany(Listing::class, 'favorites')

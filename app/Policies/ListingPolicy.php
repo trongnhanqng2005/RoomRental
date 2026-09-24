@@ -37,6 +37,11 @@ class ListingPolicy
         return $this->owns($user, $listing) && $listing->visibility_status !== 'SUSPENDED';
     }
 
+    public function manageViewingSlots(User $user, Listing $listing): bool
+    {
+        return $this->owns($user, $listing);
+    }
+
     private function owns(User $user, Listing $listing): bool
     {
         return $user->hasRole('LANDLORD') && $listing->landlord_id === $user->id;
