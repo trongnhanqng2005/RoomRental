@@ -165,6 +165,42 @@
                             @endif
                         </dl>
                     </section>
+
+                    <section class="spatial-card p-4 sm:p-5" aria-labelledby="viewing-slots-heading">
+                        <h2 class="text-lg font-bold text-slate-950" id="viewing-slots-heading">{{ __('ui.appointments.available_slots') }}</h2>
+                        <p class="mt-2 text-sm leading-6 text-slate-600">{{ __('ui.appointments.booking_window_hint') }}</p>
+                        @error('slot')
+                            <p class="mt-3 rounded-control border border-danger-100 bg-danger-50 p-3 text-sm font-semibold text-danger-700" role="alert">{{ $message }}</p>
+                        @enderror
+
+                        @if ($bookableViewingSlots->isEmpty())
+                            <p class="mt-4 rounded-control border border-line bg-slate-50 p-3 text-sm text-slate-600">{{ __('ui.appointments.no_available_slots') }}</p>
+                        @else
+                            <ul class="mt-4 space-y-3">
+                                @foreach ($bookableViewingSlots as $slot)
+                                    <li class="rounded-control border border-line bg-white p-3">
+                                        <p class="font-bold text-slate-900">{{ $slot->startAtVietnam()->format('d/m/Y') }}</p>
+                                        <p class="mt-1 text-sm text-slate-600">{{ $slot->startAtVietnam()->format('H:i') }}–{{ $slot->endAtVietnam()->format('H:i') }}</p>
+                                        @if ($canBookAppointment)
+                                            <form class="mt-3 space-y-3" method="POST" action="{{ route('appointments.store', $slot) }}">
+                                                @csrf
+                                                <label class="block text-sm font-semibold text-slate-800" for="renter-note-{{ $slot->id }}">{{ __('ui.appointments.renter_note') }} <span class="font-medium text-slate-400">({{ __('ui.forms.optional') }})</span></label>
+                                                <textarea class="field-control min-h-20 resize-y" id="renter-note-{{ $slot->id }}" name="renter_note" maxlength="1000" aria-describedby="renter-note-hint-{{ $slot->id }}@if ($errors->has('renter_note')) renter-note-error-{{ $slot->id }} @endif" @if ($errors->has('renter_note')) aria-invalid="true" @endif>{{ old('renter_note') }}</textarea>
+                                                <p class="text-xs text-slate-500" id="renter-note-hint-{{ $slot->id }}">{{ __('ui.appointments.renter_note_hint') }}</p>
+                                                @error('renter_note')<p class="text-sm font-medium text-danger-700" id="renter-note-error-{{ $slot->id }}">{{ $message }}</p>@enderror
+                                                <x-ui.button class="w-full" type="submit"><i class="size-4" data-lucide="calendar-plus-2"></i>{{ __('ui.appointments.book') }}</x-ui.button>
+                                            </form>
+                                        @elseif (! auth()->check())
+                                            <a class="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-control border border-slate-300 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800" href="{{ route('login') }}">
+                                                <i class="size-4" data-lucide="log-in"></i>
+                                                {{ __('ui.appointments.login_to_book') }}
+                                            </a>
+                                        @endif
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endif
+                    </section>
                 </aside>
             </div>
         </div>

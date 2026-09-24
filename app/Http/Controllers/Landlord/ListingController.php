@@ -104,7 +104,7 @@ class ListingController extends Controller
 
     public function updateOccupancy(UpdateListingOccupancyRequest $request, Listing $listing, ListingService $listingService): RedirectResponse
     {
-        $listingService->updateOccupancy($listing, $request->validated('occupancy_status'));
+        $listingService->updateOccupancy($listing, $request->validated('occupancy_status'), $request->user());
 
         return back()->with('status', __('ui.listings.occupancy_updated'));
     }

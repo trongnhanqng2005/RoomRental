@@ -60,6 +60,14 @@
                                     <i class="size-[18px]" data-lucide="heart"></i>
                                     {{ __('ui.layout.wishlist') }}
                                 </a>
+                                <a
+                                    class="inline-flex min-h-11 items-center justify-center gap-2 rounded-control px-3 py-2 text-sm font-bold transition hover:bg-brand-50 hover:text-brand-800 {{ request()->routeIs('appointments.*') ? 'bg-brand-50 text-brand-800' : 'text-slate-600' }}"
+                                    href="{{ route('appointments.index') }}"
+                                    @if (request()->routeIs('appointments.*')) aria-current="page" @endif
+                                >
+                                    <i class="size-[18px]" data-lucide="calendar-days"></i>
+                                    {{ __('ui.layout.appointments') }}
+                                </a>
                             @endif
                             @if (auth()->user()->hasAnyRole('ADMIN', 'SUPER_ADMIN'))
                                 <a
@@ -90,6 +98,16 @@
                                 >
                                     <i class="size-[18px]" data-lucide="building-2"></i>
                                     {{ __('ui.layout.landlord_listings') }}
+                                </a>
+                            @endif
+                            @if (auth()->user()->hasRole('LANDLORD'))
+                                <a
+                                    class="inline-flex min-h-11 items-center justify-center gap-2 rounded-control px-3 py-2 text-sm font-bold transition hover:bg-brand-50 hover:text-brand-800 {{ request()->routeIs('landlord.appointments.*') ? 'bg-brand-50 text-brand-800' : 'text-slate-600' }}"
+                                    href="{{ route('landlord.appointments.index') }}"
+                                    @if (request()->routeIs('landlord.appointments.*')) aria-current="page" @endif
+                                >
+                                    <i class="size-[18px]" data-lucide="calendar-check-2"></i>
+                                    {{ __('ui.layout.landlord_appointments') }}
                                 </a>
                             @endif
                             <a

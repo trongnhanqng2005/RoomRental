@@ -7,6 +7,7 @@ use App\Http\Requests\Public\ListingSearchRequest;
 use App\Models\Amenity;
 use App\Models\Province;
 use App\Queries\ListingSearchQuery;
+use App\Services\AppointmentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -51,8 +52,12 @@ class ListingController extends Controller
         return view('public.listings.index', compact('listings', 'provinces', 'amenities', 'canFavorite', 'favoritedListingIds'));
     }
 
-    public function show(Request $request, int $listing, ListingSearchQuery $listingSearchQuery): View
-    {
+    public function show(
+        Request $request,
+        int $listing,
+        ListingSearchQuery $listingSearchQuery,
+        AppointmentService $appointmentService,
+    ): View {
         $listing = $listingSearchQuery->build()
             ->whereKey($listing)
             ->firstOrFail();
@@ -71,6 +76,8 @@ class ListingController extends Controller
             'landlord:id,phone',
             'landlord.profile:user_id,full_name,avatar_url,zalo_number',
         ]);
+        $bookableViewingSlots = $appointmentService->bookableSlotsForListing($listing);
+        $listing->setRelation('bookableViewingSlots', $bookableViewingSlots);
 
         $coverImage = $listing->images->firstWhere('is_cover', true) ?? $listing->images->first();
         $galleryImages = $listing->images->reject(fn ($image) => $image->id === $coverImage?->id)->values();
@@ -83,6 +90,21 @@ class ListingController extends Controller
             ->map(fn (string $part) => mb_strtoupper(mb_substr($part, 0, 1)))
             ->implode('');
 
-        return view('public.listings.show', compact('listing', 'coverImage', 'galleryImages', 'avatarSrc', 'initials', 'canFavorite', 'isFavorited'));
+        $user = $request->user();
+        $canBookAppointment = $user !== null
+            && $user->hasRole('RENTER')
+            && (int) $listing->landlord_id !== (int) $user->id;
+
+        return view('public.listings.show', compact(
+            'listing',
+            'coverImage',
+            'galleryImages',
+            'avatarSrc',
+            'initials',
+            'canFavorite',
+            'isFavorited',
+            'bookableViewingSlots',
+            'canBookAppointment',
+        ));
     }
 }

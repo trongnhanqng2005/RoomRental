@@ -129,6 +129,7 @@
                                         <td class="px-5 py-5">
                                             <div class="flex min-w-40 flex-col items-stretch gap-2">
                                                 <a class="inline-flex min-h-10 items-center justify-center gap-2 rounded-control border border-slate-300 px-3 text-xs font-bold text-slate-700 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800" href="{{ route('landlord.listings.edit', $listing) }}"><i class="size-4" data-lucide="pencil"></i>{{ __('ui.listings.edit') }}</a>
+                                                <a class="inline-flex min-h-10 items-center justify-center gap-2 rounded-control border border-slate-300 px-3 text-xs font-bold text-slate-700 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800" href="{{ route('landlord.viewing-slots.index', $listing) }}"><i class="size-4" data-lucide="calendar-days"></i>{{ __('ui.appointments.manage_slots') }}</a>
                                                 <form method="POST" action="{{ route('landlord.listings.occupancy', $listing) }}">
                                                     @csrf
                                                     @method('PATCH')
@@ -175,6 +176,7 @@
                             </div>
                             <div class="mt-4 flex flex-wrap gap-2 border-t border-line pt-4">
                                 <a class="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-control border border-slate-300 px-3 text-xs font-bold text-slate-700 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800" href="{{ route('landlord.listings.edit', $listing) }}"><i class="size-4" data-lucide="pencil"></i>{{ __('ui.listings.edit') }}</a>
+                                <a class="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-control border border-slate-300 px-3 text-xs font-bold text-slate-700 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800" href="{{ route('landlord.viewing-slots.index', $listing) }}"><i class="size-4" data-lucide="calendar-days"></i>{{ __('ui.appointments.manage_slots') }}</a>
                             </div>
                             <div class="mt-2 grid gap-2 sm:grid-cols-2">
                                 <form method="POST" action="{{ route('landlord.listings.occupancy', $listing) }}">
