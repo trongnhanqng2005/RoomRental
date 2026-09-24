@@ -8,6 +8,7 @@ use App\Http\Controllers\Landlord\LocationController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Public\ListingController as PublicListingController;
+use App\Http\Controllers\Renter\FavoriteController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/rooms', [PublicListingController::class, 'index'])->name('public.listings.index');
@@ -41,6 +42,16 @@ Route::patch('/profile', [ProfileController::class, 'update'])
 Route::middleware('auth')->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
+});
+
+Route::middleware(['auth', 'role:RENTER'])->group(function () {
+    Route::get('/wishlist', [FavoriteController::class, 'index'])->name('wishlist.index');
+    Route::post('/favorites/{listing}', [FavoriteController::class, 'store'])
+        ->whereNumber('listing')
+        ->name('favorites.store');
+    Route::delete('/favorites/{listing}', [FavoriteController::class, 'destroy'])
+        ->whereNumber('listing')
+        ->name('favorites.destroy');
 });
 
 Route::middleware(['auth', 'role:ADMIN,SUPER_ADMIN'])
