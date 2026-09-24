@@ -31,6 +31,8 @@ return [
     'listing_image_not_owned' => 'Một hoặc nhiều ảnh không thuộc tin đăng này.',
     'listing_phone_required' => 'Bạn cần bổ sung số điện thoại trước khi đăng tin đầu tiên.',
     'listing_contact_address_required' => 'Bạn cần bổ sung địa chỉ liên hệ trước khi đăng tin đầu tiên.',
+    'public_location_parent_required' => 'Vui lòng chọn cấp khu vực cha trước.',
+    'public_min_exceeds_max' => 'Giá trị tối thiểu không được lớn hơn giá trị tối đa.',
 
     'custom' => [],
 
@@ -71,5 +73,11 @@ return [
         'new_images.*' => 'ảnh',
         'cover_selection' => 'ảnh bìa',
         'rejection_reason' => 'lý do từ chối',
+        'q' => 'từ khóa',
+        'min_price' => 'giá thuê thấp nhất',
+        'max_price' => 'giá thuê cao nhất',
+        'min_area' => 'diện tích tối thiểu',
+        'max_area' => 'diện tích tối đa',
+        'sort' => 'cách sắp xếp',
     ],
 ];

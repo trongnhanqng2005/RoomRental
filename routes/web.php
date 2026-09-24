@@ -7,7 +7,13 @@ use App\Http\Controllers\Landlord\ListingController;
 use App\Http\Controllers\Landlord\LocationController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Public\ListingController as PublicListingController;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/rooms', [PublicListingController::class, 'index'])->name('public.listings.index');
+Route::get('/rooms/{listing}', [PublicListingController::class, 'show'])
+    ->whereNumber('listing')
+    ->name('public.listings.show');
 
 Route::get('/', function () {
     return view('welcome');

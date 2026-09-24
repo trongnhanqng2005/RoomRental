@@ -22,6 +22,8 @@ return [
     'listing_image_not_owned' => 'One or more images do not belong to this listing.',
     'listing_phone_required' => 'Add a phone number before submitting your first listing.',
     'listing_contact_address_required' => 'Add a contact address before submitting your first listing.',
+    'public_location_parent_required' => 'Select the parent location first.',
+    'public_min_exceeds_max' => 'The minimum value may not exceed the maximum value.',
     'attributes' => [
         'category_id' => 'room category',
         'title' => 'title',
@@ -45,5 +47,11 @@ return [
         'new_images' => 'room images',
         'cover_selection' => 'cover image',
         'rejection_reason' => 'rejection reason',
+        'q' => 'keyword',
+        'min_price' => 'minimum rent',
+        'max_price' => 'maximum rent',
+        'min_area' => 'minimum area',
+        'max_area' => 'maximum area',
+        'sort' => 'sort order',
     ],
 ];

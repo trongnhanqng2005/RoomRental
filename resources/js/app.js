@@ -150,22 +150,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    document.querySelectorAll('[data-listing-form], [data-public-location-filters]').forEach(initializeLocationFilters);
+
     document.querySelectorAll('[data-listing-form]').forEach((form) => {
         initializeListingForm(form);
     });
 });
 
-function initializeListingForm(form) {
+function initializeLocationFilters(form) {
     const province = form.querySelector('[data-location="province"]');
     const district = form.querySelector('[data-location="district"]');
     const ward = form.querySelector('[data-location="ward"]');
-    const imageInput = form.querySelector('[data-image-input]');
-    const imageGrid = form.querySelector('[data-image-grid]');
-    const imageCount = form.querySelector('[data-image-count]');
-    const newFiles = new Map();
-    let nextFileKey = 0;
 
-    const syncLocationOptions = (select, parentAttribute, parentValue) => {
+    const syncLocationOptions = (select, parentValue) => {
         if (!select) {
             return;
         }
@@ -194,8 +191,8 @@ function initializeListingForm(form) {
     };
 
     const syncLocations = () => {
-        syncLocationOptions(district, 'province', province?.value ?? '');
-        syncLocationOptions(ward, 'district', district?.value ?? '');
+        syncLocationOptions(district, province?.value ?? '');
+        syncLocationOptions(ward, district?.value ?? '');
     };
 
     province?.addEventListener('change', () => {
@@ -214,6 +211,16 @@ function initializeListingForm(form) {
         }
         syncLocations();
     });
+
+    syncLocations();
+}
+
+function initializeListingForm(form) {
+    const imageInput = form.querySelector('[data-image-input]');
+    const imageGrid = form.querySelector('[data-image-grid]');
+    const imageCount = form.querySelector('[data-image-count]');
+    const newFiles = new Map();
+    let nextFileKey = 0;
 
     const selectFirstCover = () => {
         const firstRadio = imageGrid?.querySelector('input[type="radio"][data-cover-radio]');
@@ -345,7 +352,6 @@ function initializeListingForm(form) {
         }
     });
 
-    syncLocations();
     syncImageState();
 
     form.querySelectorAll('[data-fee-toggle]').forEach((toggle) => {
