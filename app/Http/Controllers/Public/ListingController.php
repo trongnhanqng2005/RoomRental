@@ -7,6 +7,7 @@ use App\Http\Requests\Public\ListingSearchRequest;
 use App\Models\Amenity;
 use App\Models\Province;
 use App\Queries\ListingSearchQuery;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
@@ -24,6 +25,18 @@ class ListingController extends Controller
             ->paginate(10)
             ->withQueryString();
 
+        $canFavorite = $request->user()?->hasRole('RENTER') ?? false;
+        $favoritedListingIds = [];
+        $listingIds = $listings->getCollection()->modelKeys();
+
+        if ($canFavorite && $listingIds !== []) {
+            $favoritedListingIds = $request->user()->favorites()
+                ->whereIn('listings.id', $listingIds)
+                ->pluck('listings.id')
+                ->map(fn ($id) => (int) $id)
+                ->all();
+        }
+
         $provinces = Province::query()
             ->where('is_active', true)
             ->with([
@@ -35,14 +48,17 @@ class ListingController extends Controller
             ->get();
         $amenities = Amenity::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']);
 
-        return view('public.listings.index', compact('listings', 'provinces', 'amenities'));
+        return view('public.listings.index', compact('listings', 'provinces', 'amenities', 'canFavorite', 'favoritedListingIds'));
     }
 
-    public function show(int $listing, ListingSearchQuery $listingSearchQuery): View
+    public function show(Request $request, int $listing, ListingSearchQuery $listingSearchQuery): View
     {
         $listing = $listingSearchQuery->build()
             ->whereKey($listing)
             ->firstOrFail();
+
+        $canFavorite = $request->user()?->hasRole('RENTER') ?? false;
+        $isFavorited = $canFavorite && $request->user()->favorites()->whereKey($listing->getKey())->exists();
 
         DB::table('listings')->where('id', $listing->getKey())->increment('view_count');
         $listing->load([
@@ -67,6 +83,6 @@ class ListingController extends Controller
             ->map(fn (string $part) => mb_strtoupper(mb_substr($part, 0, 1)))
             ->implode('');
 
-        return view('public.listings.show', compact('listing', 'coverImage', 'galleryImages', 'avatarSrc', 'initials'));
+        return view('public.listings.show', compact('listing', 'coverImage', 'galleryImages', 'avatarSrc', 'initials', 'canFavorite', 'isFavorited'));
     }
 }

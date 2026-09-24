@@ -184,6 +184,22 @@
                                         @endforeach
                                     </ul>
                                 @endif
+                                @if ($canFavorite)
+                                    @php($isFavorited = in_array((int) $listing->id, $favoritedListingIds, true))
+                                    <form class="mt-4" method="POST" action="{{ route($isFavorited ? 'favorites.destroy' : 'favorites.store', $listing) }}">
+                                        @csrf
+                                        @if ($isFavorited) @method('DELETE') @endif
+                                        <x-ui.button class="w-full" type="submit" variant="secondary" :aria-pressed="$isFavorited ? 'true' : 'false'">
+                                            <i class="size-4 {{ $isFavorited ? 'fill-current text-danger-700' : 'text-slate-500' }}" data-lucide="heart"></i>
+                                            {{ $isFavorited ? __('ui.favorites.remove') : __('ui.favorites.save') }}
+                                        </x-ui.button>
+                                    </form>
+                                @elseif (! auth()->check())
+                                    <a class="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-control border border-slate-300 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800" href="{{ route('login') }}">
+                                        <i class="size-4" data-lucide="heart"></i>
+                                        {{ __('ui.favorites.login_to_save') }}
+                                    </a>
+                                @endif
                             </div>
                         </article>
                     @endforeach
