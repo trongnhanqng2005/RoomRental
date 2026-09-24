@@ -70,5 +70,6 @@ return [
         'new_images' => 'ảnh phòng',
         'new_images.*' => 'ảnh',
         'cover_selection' => 'ảnh bìa',
+        'rejection_reason' => 'lý do từ chối',
     ],
 ];
