@@ -15,6 +15,10 @@
 
                 @guest
                     <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+                        <a class="inline-flex min-h-12 items-center justify-center gap-2 rounded-control border border-slate-300 bg-white px-6 text-sm font-bold text-slate-700 shadow-sm transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800" href="{{ route('public.listings.index') }}">
+                            <i class="size-[18px]" data-lucide="search"></i>
+                            {{ __('ui.home.browse_rooms') }}
+                        </a>
                         <a class="inline-flex min-h-12 items-center justify-center gap-2 rounded-control bg-brand-600 px-6 text-sm font-bold text-white shadow-[0_14px_30px_-15px_rgb(15_118_110_/_0.95)] transition hover:bg-brand-700 active:scale-[0.98]" href="{{ route('register') }}">
                             {{ __('ui.home.create_renter_account') }}
                             <i class="size-[18px]" data-lucide="arrow-right"></i>
@@ -22,9 +26,15 @@
                         <a class="inline-flex min-h-12 items-center justify-center rounded-control border border-slate-300 bg-white px-6 text-sm font-bold text-slate-700 shadow-sm transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800" href="{{ route('login') }}">{{ __('ui.actions.login') }}</a>
                     </div>
                 @else
-                    <div class="mt-8 inline-flex items-center gap-3 rounded-control border border-success-100 bg-success-50 px-4 py-3 text-sm font-bold text-success-700">
-                        <i class="size-5" data-lucide="check"></i>
-                        {{ __('ui.home.logged_in') }}
+                    <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+                        <a class="inline-flex min-h-12 items-center justify-center gap-2 rounded-control bg-brand-600 px-6 text-sm font-bold text-white shadow-[0_14px_30px_-15px_rgb(15_118_110_/_0.95)] transition hover:bg-brand-700" href="{{ route('public.listings.index') }}">
+                            <i class="size-[18px]" data-lucide="search"></i>
+                            {{ __('ui.home.browse_rooms') }}
+                        </a>
+                        <span class="inline-flex items-center gap-2 text-sm font-semibold text-slate-600">
+                            <i class="size-4 text-success-700" data-lucide="check"></i>
+                            {{ __('ui.home.logged_in') }}
+                        </span>
                     </div>
                 @endguest
             </div>
