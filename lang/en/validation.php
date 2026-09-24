@@ -44,5 +44,6 @@ return [
         'images' => 'room images',
         'new_images' => 'room images',
         'cover_selection' => 'cover image',
+        'rejection_reason' => 'rejection reason',
     ],
 ];

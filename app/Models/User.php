@@ -42,6 +42,11 @@ class User extends Authenticatable
         return $this->hasMany(Listing::class, 'landlord_id');
     }
 
+    public function appNotifications(): HasMany
+    {
+        return $this->hasMany(AppNotification::class);
+    }
+
     public function hasRole(string $role): bool
     {
         return $this->hasAnyRole($role);

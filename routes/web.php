@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Controllers\Admin\ListingModerationController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Landlord\ListingController;
 use App\Http\Controllers\Landlord\LocationController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -29,6 +31,22 @@ Route::get('/profile', [ProfileController::class, 'show'])
 Route::patch('/profile', [ProfileController::class, 'update'])
     ->middleware('auth')
     ->name('profile.update');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
+});
+
+Route::middleware(['auth', 'role:ADMIN,SUPER_ADMIN'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->scopeBindings()
+    ->group(function () {
+        Route::get('/listing-moderations', [ListingModerationController::class, 'index'])->name('listing-moderations.index');
+        Route::get('/listing-moderations/{listing}', [ListingModerationController::class, 'show'])->name('listing-moderations.show');
+        Route::post('/listing-moderations/{listing}/moderations/{moderation}/approve', [ListingModerationController::class, 'approve'])->name('listing-moderations.approve');
+        Route::post('/listing-moderations/{listing}/moderations/{moderation}/reject', [ListingModerationController::class, 'reject'])->name('listing-moderations.reject');
+    });
 
 Route::middleware('auth')->prefix('landlord')->name('landlord.')->group(function () {
     Route::get('/listings/create', [ListingController::class, 'create'])->name('listings.create');

@@ -43,6 +43,28 @@
                                 <i class="size-4" data-lucide="arrow-right"></i>
                             </a>
                         @else
+                            @if (auth()->user()->hasAnyRole('ADMIN', 'SUPER_ADMIN'))
+                                <a
+                                    class="inline-flex min-h-11 items-center justify-center gap-2 rounded-control px-3 py-2 text-sm font-bold transition hover:bg-brand-50 hover:text-brand-800 {{ request()->routeIs('admin.listing-moderations.*') ? 'bg-brand-50 text-brand-800' : 'text-slate-600' }}"
+                                    href="{{ route('admin.listing-moderations.index') }}"
+                                    @if (request()->routeIs('admin.listing-moderations.*')) aria-current="page" @endif
+                                >
+                                    <i class="size-[18px]" data-lucide="shield-check"></i>
+                                    {{ __('ui.layout.admin_moderation') }}
+                                </a>
+                            @endif
+                            @php($unreadNotificationsCount = auth()->user()->appNotifications()->whereNull('read_at')->count())
+                            <a
+                                class="inline-flex min-h-11 items-center justify-center gap-2 rounded-control px-3 py-2 text-sm font-bold transition hover:bg-brand-50 hover:text-brand-800 {{ request()->routeIs('notifications.*') ? 'bg-brand-50 text-brand-800' : 'text-slate-600' }}"
+                                href="{{ route('notifications.index') }}"
+                                @if (request()->routeIs('notifications.*')) aria-current="page" @endif
+                            >
+                                <i class="size-[18px]" data-lucide="message-circle"></i>
+                                {{ __('ui.layout.notifications') }}
+                                @if ($unreadNotificationsCount > 0)
+                                    <span class="rounded-full bg-brand-100 px-2 py-0.5 text-xs font-bold text-brand-800" aria-label="{{ __('ui.notifications.unread_count', ['count' => $unreadNotificationsCount]) }}">{{ $unreadNotificationsCount }}</span>
+                                @endif
+                            </a>
                             @if (auth()->user()->hasAnyRole('RENTER', 'LANDLORD'))
                                 <a
                                     class="inline-flex min-h-11 items-center justify-center gap-2 rounded-control px-3 py-2 text-sm font-bold transition hover:bg-brand-50 hover:text-brand-800 {{ request()->routeIs('landlord.*') ? 'bg-brand-50 text-brand-800' : 'text-slate-600' }}"
