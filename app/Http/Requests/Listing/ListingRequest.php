@@ -23,7 +23,7 @@ abstract class ListingRequest extends FormRequest
     protected function commonRules(): array
     {
         return [
-            'category_id' => ['required', 'integer', Rule::exists('room_categories', 'id')->where(fn ($query) => $query->where('is_active', true))],
+            'category_id' => $this->categoryIdRules(),
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
             'monthly_rent' => ['required', 'numeric', 'min:0', 'max:9999999999.99'],
@@ -40,13 +40,25 @@ abstract class ListingRequest extends FormRequest
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'amenity_ids' => ['nullable', 'array'],
-            'amenity_ids.*' => ['integer', 'distinct', Rule::exists('amenities', 'id')->where(fn ($query) => $query->where('is_active', true))],
+            'amenity_ids.*' => $this->amenityIdRules(),
             'fees' => ['nullable', 'array'],
             'fees.*.fee_type_id' => ['required', 'integer', 'distinct', Rule::exists('fee_types', 'id')->where(fn ($query) => $query->where('is_active', true))],
             'fees.*.fee_unit_id' => ['required', 'integer', Rule::exists('fee_units', 'id')->where(fn ($query) => $query->where('is_active', true))],
             'fees.*.amount' => ['required', 'numeric', 'min:0', 'max:9999999999.99'],
             'fees.*.note' => ['nullable', 'string', 'max:500'],
         ];
+    }
+
+    /** @return array<int, mixed> */
+    protected function categoryIdRules(): array
+    {
+        return ['required', 'integer', Rule::exists('room_categories', 'id')->where(fn ($query) => $query->where('is_active', true))];
+    }
+
+    /** @return array<int, mixed> */
+    protected function amenityIdRules(): array
+    {
+        return ['integer', 'distinct', Rule::exists('amenities', 'id')->where(fn ($query) => $query->where('is_active', true))];
     }
 
     public function withValidator(Validator $validator): void

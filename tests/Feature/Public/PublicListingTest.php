@@ -311,6 +311,30 @@ class PublicListingTest extends TestCase
         $this->assertSame(1, $wifiOnly->amenities()->count());
     }
 
+    public function test_hidden_catalog_entries_remain_visible_on_eligible_listing_but_not_public_filter_choices(): void
+    {
+        $amenity = Amenity::query()->create(['name' => 'Wi-Fi đang ẩn', 'is_active' => true]);
+        $listing = $this->createListing('Tin vẫn hiển thị');
+        $listing->amenities()->attach($amenity->id);
+        $this->category->forceFill(['is_active' => false])->save();
+        $amenity->forceFill(['is_active' => false])->save();
+
+        $index = $this->get('/rooms')
+            ->assertOk()
+            ->assertSee('Tin vẫn hiển thị')
+            ->assertSee('Wi-Fi đang ẩn');
+        $this->assertFalse($index->viewData('amenities')->contains('id', $amenity->id));
+
+        $this->get('/rooms/'.$listing->id)
+            ->assertOk()
+            ->assertSee('Phòng trọ')
+            ->assertSee('Wi-Fi đang ẩn');
+
+        $this->get('/rooms?'.http_build_query(['amenity_ids' => [$amenity->id]]))
+            ->assertRedirect()
+            ->assertSessionHasErrors('amenity_ids.0');
+    }
+
     public function test_combined_search_filters_are_applied_together(): void
     {
         $amenity = Amenity::query()->create(['name' => 'Máy giặt', 'is_active' => true]);

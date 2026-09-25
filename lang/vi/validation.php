@@ -31,6 +31,8 @@ return [
     'listing_image_count' => 'Tin đăng phải có từ 3 đến 8 ảnh.',
     'listing_image_not_owned' => 'Một hoặc nhiều ảnh không thuộc tin đăng này.',
     'listing_phone_required' => 'Bạn cần bổ sung số điện thoại trước khi đăng tin đầu tiên.',
+    'catalog_name_unique' => 'Tên này đã tồn tại trong danh mục, kể cả mục đang ẩn.',
+    'listing_catalog_unavailable' => 'Danh mục hoặc tiện nghi đã bị ẩn và không thể chọn.',
     'listing_contact_address_required' => 'Bạn cần bổ sung địa chỉ liên hệ trước khi đăng tin đầu tiên.',
     'public_location_parent_required' => 'Vui lòng chọn cấp khu vực cha trước.',
     'public_min_exceeds_max' => 'Giá trị tối thiểu không được lớn hơn giá trị tối đa.',

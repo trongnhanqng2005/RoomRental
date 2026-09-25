@@ -164,8 +164,26 @@ class ListingController extends Controller
         }
 
         return [
-            'categories' => RoomCategory::query()->where('is_active', true)->orderBy('name')->get(),
-            'amenities' => Amenity::query()->where('is_active', true)->orderBy('name')->get(),
+            'categories' => RoomCategory::query()
+                ->where(function ($query) use ($listing): void {
+                    $query->where('is_active', true);
+
+                    if ($listing instanceof Listing) {
+                        $query->orWhereKey($listing->category_id);
+                    }
+                })
+                ->orderBy('name')
+                ->get(),
+            'amenities' => Amenity::query()
+                ->where(function ($query) use ($listing): void {
+                    $query->where('is_active', true);
+
+                    if ($listing instanceof Listing) {
+                        $query->orWhereHas('listings', fn ($listings) => $listings->whereKey($listing->id));
+                    }
+                })
+                ->orderBy('name')
+                ->get(),
             'feeTypes' => FeeType::query()->where('is_active', true)->orderBy('id')->get(),
             'feeUnits' => FeeUnit::query()->where('is_active', true)->orderBy('id')->get(),
             'provinces' => Province::query()

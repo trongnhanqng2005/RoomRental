@@ -22,6 +22,8 @@ return [
     'listing_image_count' => 'A listing must have between 3 and 8 images.',
     'listing_image_not_owned' => 'One or more images do not belong to this listing.',
     'listing_phone_required' => 'Add a phone number before submitting your first listing.',
+    'catalog_name_unique' => 'This name already exists in the catalog, including hidden items.',
+    'listing_catalog_unavailable' => 'This category or amenity is hidden and cannot be selected.',
     'listing_contact_address_required' => 'Add a contact address before submitting your first listing.',
     'public_location_parent_required' => 'Select the parent location first.',
     'public_min_exceeds_max' => 'The minimum value may not exceed the maximum value.',

@@ -12,12 +12,16 @@ class RoomCategorySeeder extends Seeder
         $now = now();
 
         foreach (['Phòng trọ', 'Căn hộ mini', 'Chung cư', 'Studio', 'Nhà nguyên căn', 'Ở ghép'] as $name) {
-            DB::table('room_categories')->updateOrInsert(
-                ['name' => $name],
-                fn (bool $exists) => $exists
-                    ? ['is_active' => true, 'updated_at' => $now]
-                    : ['is_active' => true, 'created_at' => $now, 'updated_at' => $now],
-            );
+            if (DB::table('room_categories')->where('name', $name)->exists()) {
+                continue;
+            }
+
+            DB::table('room_categories')->insert([
+                'name' => $name,
+                'is_active' => true,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
         }
     }
 }

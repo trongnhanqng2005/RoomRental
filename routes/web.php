@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Admin\AmenityController;
 use App\Http\Controllers\Admin\ListingModerationController;
 use App\Http\Controllers\Admin\ReportController as AdminReportController;
+use App\Http\Controllers\Admin\RoomCategoryController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
@@ -92,6 +94,18 @@ Route::middleware(['auth', 'role:ADMIN,SUPER_ADMIN'])
         Route::get('/reports/{report}', [AdminReportController::class, 'show'])->whereNumber('report')->name('reports.show');
         Route::post('/reports/{report}/dismiss', [AdminReportController::class, 'dismiss'])->whereNumber('report')->name('reports.dismiss');
         Route::post('/reports/{report}/resolve', [AdminReportController::class, 'resolve'])->whereNumber('report')->name('reports.resolve');
+        Route::get('/categories', [RoomCategoryController::class, 'index'])->name('categories.index');
+        Route::post('/categories', [RoomCategoryController::class, 'store'])->name('categories.store');
+        Route::get('/categories/{category}/edit', [RoomCategoryController::class, 'edit'])->whereNumber('category')->name('categories.edit');
+        Route::put('/categories/{category}', [RoomCategoryController::class, 'update'])->whereNumber('category')->name('categories.update');
+        Route::patch('/categories/{category}/hide', [RoomCategoryController::class, 'hide'])->whereNumber('category')->name('categories.hide');
+        Route::patch('/categories/{category}/restore', [RoomCategoryController::class, 'restore'])->whereNumber('category')->name('categories.restore');
+        Route::get('/amenities', [AmenityController::class, 'index'])->name('amenities.index');
+        Route::post('/amenities', [AmenityController::class, 'store'])->name('amenities.store');
+        Route::get('/amenities/{amenity}/edit', [AmenityController::class, 'edit'])->whereNumber('amenity')->name('amenities.edit');
+        Route::put('/amenities/{amenity}', [AmenityController::class, 'update'])->whereNumber('amenity')->name('amenities.update');
+        Route::patch('/amenities/{amenity}/hide', [AmenityController::class, 'hide'])->whereNumber('amenity')->name('amenities.hide');
+        Route::patch('/amenities/{amenity}/restore', [AmenityController::class, 'restore'])->whereNumber('amenity')->name('amenities.restore');
         Route::get('/users', [UserManagementController::class, 'index'])->name('users.index');
         Route::get('/users/{user}', [UserManagementController::class, 'show'])->whereNumber('user')->name('users.show');
         Route::patch('/users/{user}/lock', [UserManagementController::class, 'lock'])->whereNumber('user')->name('users.lock');
