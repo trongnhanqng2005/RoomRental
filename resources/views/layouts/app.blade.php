@@ -34,14 +34,16 @@
 
                 <div id="site-navigation" class="hs-collapse hidden w-full basis-full overflow-hidden transition-[height] duration-300 lg:block lg:w-auto lg:basis-auto">
                     <nav class="mt-4 flex flex-col gap-2 border-t border-slate-200 pt-4 lg:mt-0 lg:flex-row lg:items-center lg:border-0 lg:pt-0" aria-label="{{ __('ui.layout.main_navigation') }}">
-                        <a
-                            class="inline-flex min-h-11 items-center justify-center gap-2 rounded-control px-3 py-2 text-sm font-bold transition hover:bg-brand-50 hover:text-brand-800 {{ request()->routeIs('public.listings.*') ? 'bg-brand-50 text-brand-800' : 'text-slate-600' }}"
-                            href="{{ route('public.listings.index') }}"
-                            @if (request()->routeIs('public.listings.*')) aria-current="page" @endif
-                        >
-                            <i class="size-[18px]" data-lucide="search"></i>
-                            {{ __('ui.layout.search_rooms') }}
-                        </a>
+                        @if (! auth()->check() || ! auth()->user()->must_change_password)
+                            <a
+                                class="inline-flex min-h-11 items-center justify-center gap-2 rounded-control px-3 py-2 text-sm font-bold transition hover:bg-brand-50 hover:text-brand-800 {{ request()->routeIs('public.listings.*') ? 'bg-brand-50 text-brand-800' : 'text-slate-600' }}"
+                                href="{{ route('public.listings.index') }}"
+                                @if (request()->routeIs('public.listings.*')) aria-current="page" @endif
+                            >
+                                <i class="size-[18px]" data-lucide="search"></i>
+                                {{ __('ui.layout.search_rooms') }}
+                            </a>
+                        @endif
                         @guest
                             @if (Route::has('login'))
                                 <a class="inline-flex min-h-11 items-center justify-center rounded-control px-4 text-sm font-bold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900" href="{{ route('login') }}">{{ __('ui.actions.login') }}</a>
@@ -51,6 +53,7 @@
                                 <i class="size-4" data-lucide="arrow-right"></i>
                             </a>
                         @else
+                            @unless (auth()->user()->must_change_password)
                             @if (auth()->user()->hasRole('RENTER'))
                                 <a
                                     class="inline-flex min-h-11 items-center justify-center gap-2 rounded-control px-3 py-2 text-sm font-bold transition hover:bg-brand-50 hover:text-brand-800 {{ request()->routeIs('wishlist.*') ? 'bg-brand-50 text-brand-800' : 'text-slate-600' }}"
@@ -85,6 +88,14 @@
                                 >
                                     <i class="size-[18px]" data-lucide="flag"></i>
                                     {{ __('ui.layout.admin_reports') }}
+                                </a>
+                                <a
+                                    class="inline-flex min-h-11 items-center justify-center gap-2 rounded-control px-3 py-2 text-sm font-bold transition hover:bg-brand-50 hover:text-brand-800 {{ request()->routeIs('admin.users.*') ? 'bg-brand-50 text-brand-800' : 'text-slate-600' }}"
+                                    href="{{ route('admin.users.index') }}"
+                                    @if (request()->routeIs('admin.users.*')) aria-current="page" @endif
+                                >
+                                    <i class="size-[18px]" data-lucide="users"></i>
+                                    {{ __('ui.layout.admin_users') }}
                                 </a>
                             @endif
                             @php($unreadNotificationsCount = auth()->user()->appNotifications()->whereNull('read_at')->count())
@@ -126,6 +137,7 @@
                                 <i class="size-[18px]" data-lucide="user-round"></i>
                                 {{ __('ui.layout.profile') }}
                             </a>
+                            @endunless
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <x-ui.button class="w-full lg:w-auto" type="submit" variant="secondary">{{ __('ui.actions.logout') }}</x-ui.button>

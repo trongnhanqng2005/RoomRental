@@ -57,6 +57,10 @@ class AuthenticatedSessionController extends Controller
         $user->last_login_at = now();
         $user->save();
 
+        if ($user->must_change_password) {
+            return redirect()->route('password.change.required');
+        }
+
         return redirect()->intended('/');
     }
 

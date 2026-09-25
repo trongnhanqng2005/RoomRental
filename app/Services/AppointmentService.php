@@ -255,10 +255,10 @@ class AppointmentService
      * @param  Collection<int, Listing>  $lockedListings
      * @return array<int, array{context: array<string, mixed>, renter_id: int, cancellation_reason: string}>
      */
-    public function autoCancelFutureForEnforcement(Collection $lockedListings, User $admin, string $reason): array
+    public function autoCancelFutureForAdminAction(Collection $lockedListings, User $admin, string $reason): array
     {
         if (DB::transactionLevel() === 0) {
-            throw new RuntimeException('Enforcement appointment cancellation requires an active transaction.');
+            throw new RuntimeException('Administrative appointment cancellation requires an active transaction.');
         }
 
         if (! $admin->hasAnyRole('ADMIN', 'SUPER_ADMIN')) {
@@ -266,7 +266,7 @@ class AppointmentService
         }
 
         if (! in_array($reason, ['LISTING_SUSPENDED', 'LANDLORD_ACCOUNT_LOCKED'], true)) {
-            throw new RuntimeException('The enforcement appointment cancellation reason is invalid.');
+            throw new RuntimeException('The administrative appointment cancellation reason is invalid.');
         }
 
         return $this->autoCancelFutureAppointments($lockedListings, $admin->id, $reason);
@@ -285,7 +285,7 @@ class AppointmentService
     /**
      * @param  array<int, array{context: array<string, mixed>, renter_id: int, cancellation_reason: string}>  $notifications
      */
-    public function notifyEnforcementAppointments(array $notifications): void
+    public function notifyAutoCancelledAppointments(array $notifications): void
     {
         foreach ($notifications as $notification) {
             $this->notify(

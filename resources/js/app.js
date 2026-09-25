@@ -41,6 +41,7 @@ import {
     Type,
     UserRound,
     UserPlus,
+    Users,
     X,
     createIcons,
 } from 'lucide';
@@ -87,6 +88,7 @@ const lucideIcons = {
     Type,
     UserRound,
     UserPlus,
+    Users,
     X,
 };
 

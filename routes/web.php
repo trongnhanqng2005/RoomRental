@@ -2,8 +2,10 @@
 
 use App\Http\Controllers\Admin\ListingModerationController;
 use App\Http\Controllers\Admin\ReportController as AdminReportController;
+use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\TemporaryPasswordController;
 use App\Http\Controllers\Landlord\AppointmentController as LandlordAppointmentController;
 use App\Http\Controllers\Landlord\ListingController;
 use App\Http\Controllers\Landlord\LocationController;
@@ -39,6 +41,11 @@ Route::middleware('guest')->group(function () {
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
     ->middleware('auth')
     ->name('logout');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/password/change-required', [TemporaryPasswordController::class, 'create'])->name('password.change.required');
+    Route::put('/password/change-required', [TemporaryPasswordController::class, 'update'])->name('password.change.update');
+});
 
 Route::get('/profile', [ProfileController::class, 'show'])
     ->middleware('auth')
@@ -84,6 +91,13 @@ Route::middleware(['auth', 'role:ADMIN,SUPER_ADMIN'])
         Route::get('/reports/{report}', [AdminReportController::class, 'show'])->whereNumber('report')->name('reports.show');
         Route::post('/reports/{report}/dismiss', [AdminReportController::class, 'dismiss'])->whereNumber('report')->name('reports.dismiss');
         Route::post('/reports/{report}/resolve', [AdminReportController::class, 'resolve'])->whereNumber('report')->name('reports.resolve');
+        Route::get('/users', [UserManagementController::class, 'index'])->name('users.index');
+        Route::get('/users/{user}', [UserManagementController::class, 'show'])->whereNumber('user')->name('users.show');
+        Route::patch('/users/{user}/lock', [UserManagementController::class, 'lock'])->whereNumber('user')->name('users.lock');
+        Route::patch('/users/{user}/unlock', [UserManagementController::class, 'unlock'])->whereNumber('user')->name('users.unlock');
+        Route::post('/users/{user}/password-reset', [UserManagementController::class, 'resetPassword'])->whereNumber('user')->name('users.password-reset');
+        Route::post('/users/{user}/promote', [UserManagementController::class, 'promote'])->whereNumber('user')->name('users.promote');
+        Route::delete('/users/{user}/admin-role', [UserManagementController::class, 'revoke'])->whereNumber('user')->name('users.revoke');
     });
 
 Route::middleware('auth')->prefix('landlord')->name('landlord.')->group(function () {
