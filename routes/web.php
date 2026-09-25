@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\ListingModerationController;
+use App\Http\Controllers\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Landlord\AppointmentController as LandlordAppointmentController;
@@ -12,12 +13,17 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Public\ListingController as PublicListingController;
 use App\Http\Controllers\Renter\AppointmentController as RenterAppointmentController;
 use App\Http\Controllers\Renter\FavoriteController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/rooms', [PublicListingController::class, 'index'])->name('public.listings.index');
 Route::get('/rooms/{listing}', [PublicListingController::class, 'show'])
     ->whereNumber('listing')
     ->name('public.listings.show');
+Route::post('/rooms/{listing}/reports', [ReportController::class, 'store'])
+    ->whereNumber('listing')
+    ->middleware(['auth', 'throttle:5,1'])
+    ->name('reports.store');
 
 Route::get('/', function () {
     return view('welcome');
@@ -74,6 +80,10 @@ Route::middleware(['auth', 'role:ADMIN,SUPER_ADMIN'])
         Route::get('/listing-moderations/{listing}', [ListingModerationController::class, 'show'])->name('listing-moderations.show');
         Route::post('/listing-moderations/{listing}/moderations/{moderation}/approve', [ListingModerationController::class, 'approve'])->name('listing-moderations.approve');
         Route::post('/listing-moderations/{listing}/moderations/{moderation}/reject', [ListingModerationController::class, 'reject'])->name('listing-moderations.reject');
+        Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
+        Route::get('/reports/{report}', [AdminReportController::class, 'show'])->whereNumber('report')->name('reports.show');
+        Route::post('/reports/{report}/dismiss', [AdminReportController::class, 'dismiss'])->whereNumber('report')->name('reports.dismiss');
+        Route::post('/reports/{report}/resolve', [AdminReportController::class, 'resolve'])->whereNumber('report')->name('reports.resolve');
     });
 
 Route::middleware('auth')->prefix('landlord')->name('landlord.')->group(function () {

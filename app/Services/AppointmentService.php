@@ -229,7 +229,7 @@ class AppointmentService
     /**
      * Must be called inside the listing occupancy transaction while the listing row is locked.
      *
-     * @return array<int, array{context: array<string, mixed>, renter_id: int}>
+     * @return array<int, array{context: array<string, mixed>, renter_id: int, cancellation_reason: string}>
      */
     public function autoCancelFutureForRentedListing(Listing $lockedListing, User $landlord): array
     {
@@ -243,53 +243,57 @@ class AppointmentService
         ) {
             throw new AuthorizationException;
         }
-        $localNow = CarbonImmutable::now(ViewingSlot::TIMEZONE);
-        $slots = ViewingSlot::query()
-            ->where('listing_id', $lockedListing->id)
-            ->whereRaw('TIMESTAMP(viewing_date, start_time) > ?', [$localNow->format('Y-m-d H:i:s')])
-            ->orderBy('id')
-            ->lockForUpdate()
-            ->get(['id']);
 
-        if ($slots->isEmpty()) {
-            return [];
-        }
-
-        $appointments = Appointment::query()
-            ->whereIn('slot_id', $slots->modelKeys())
-            ->whereIn('status', Appointment::ACTIVE_STATUSES)
-            ->orderBy('id')
-            ->lockForUpdate()
-            ->get();
-
-        $appointments->load(['slot', 'slot.listing']);
-        $now = now();
-        $notifications = [];
-
-        foreach ($appointments as $appointment) {
-            $appointment->forceFill([
-                'status' => 'AUTO_CANCELLED',
-                'cancelled_by' => $landlord->id,
-                'cancelled_at' => $now,
-                'cancellation_reason' => 'LISTING_RENTED',
-            ])->save();
-
-            $notifications[] = [
-                'context' => $this->notificationContext($appointment, $lockedListing, $appointment->slot),
-                'renter_id' => (int) $appointment->renter_id,
-            ];
-        }
-
-        return $notifications;
+        return $this->autoCancelFutureAppointments(
+            new Collection([$lockedListing]),
+            $landlord->id,
+            'LISTING_RENTED',
+        );
     }
 
     /**
-     * @param  array<int, array{context: array<string, mixed>, renter_id: int}>  $notifications
+     * @param  Collection<int, Listing>  $lockedListings
+     * @return array<int, array{context: array<string, mixed>, renter_id: int, cancellation_reason: string}>
+     */
+    public function autoCancelFutureForEnforcement(Collection $lockedListings, User $admin, string $reason): array
+    {
+        if (DB::transactionLevel() === 0) {
+            throw new RuntimeException('Enforcement appointment cancellation requires an active transaction.');
+        }
+
+        if (! $admin->hasAnyRole('ADMIN', 'SUPER_ADMIN')) {
+            throw new AuthorizationException;
+        }
+
+        if (! in_array($reason, ['LISTING_SUSPENDED', 'LANDLORD_ACCOUNT_LOCKED'], true)) {
+            throw new RuntimeException('The enforcement appointment cancellation reason is invalid.');
+        }
+
+        return $this->autoCancelFutureAppointments($lockedListings, $admin->id, $reason);
+    }
+
+    /**
+     * @param  array<int, array{context: array<string, mixed>, renter_id: int, cancellation_reason: string}>  $notifications
      */
     public function notifyRentedAppointments(array $notifications): void
     {
         foreach ($notifications as $notification) {
             $this->notify($notification['context'], $notification['renter_id'], 'APPOINTMENT_AUTO_CANCELLED', 'rented');
+        }
+    }
+
+    /**
+     * @param  array<int, array{context: array<string, mixed>, renter_id: int, cancellation_reason: string}>  $notifications
+     */
+    public function notifyEnforcementAppointments(array $notifications): void
+    {
+        foreach ($notifications as $notification) {
+            $this->notify(
+                $notification['context'],
+                $notification['renter_id'],
+                'APPOINTMENT_AUTO_CANCELLED',
+                $notification['cancellation_reason'],
+            );
         }
     }
 
@@ -410,6 +414,68 @@ class AppointmentService
         throw new ConflictHttpException(__('ui.appointments.stale_transition'));
     }
 
+    /**
+     * @param  Collection<int, Listing>  $lockedListings
+     * @return array<int, array{context: array<string, mixed>, renter_id: int, cancellation_reason: string}>
+     */
+    private function autoCancelFutureAppointments(Collection $lockedListings, int $actorId, string $reason): array
+    {
+        $listings = $lockedListings->keyBy('id');
+        $listingIds = $listings->modelKeys();
+
+        if ($listingIds === []) {
+            return [];
+        }
+
+        $localNow = CarbonImmutable::now(ViewingSlot::TIMEZONE);
+        $slots = ViewingSlot::query()
+            ->whereIn('listing_id', $listingIds)
+            ->whereRaw('TIMESTAMP(viewing_date, start_time) > ?', [$localNow->format('Y-m-d H:i:s')])
+            ->orderBy('listing_id')
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->get(['id', 'listing_id']);
+
+        if ($slots->isEmpty()) {
+            return [];
+        }
+
+        $appointments = Appointment::query()
+            ->whereIn('slot_id', $slots->modelKeys())
+            ->whereIn('status', Appointment::ACTIVE_STATUSES)
+            ->orderBy('slot_id')
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->get();
+        $appointments->load('slot');
+
+        $cancelledAt = now();
+        $notifications = [];
+
+        foreach ($appointments as $appointment) {
+            $listing = $listings->get((int) $appointment->slot->listing_id);
+
+            if (! $listing) {
+                throw new RuntimeException('A locked appointment listing could not be found.');
+            }
+
+            $appointment->forceFill([
+                'status' => 'AUTO_CANCELLED',
+                'cancelled_by' => $actorId,
+                'cancelled_at' => $cancelledAt,
+                'cancellation_reason' => $reason,
+            ])->save();
+
+            $notifications[] = [
+                'context' => $this->notificationContext($appointment, $listing, $appointment->slot),
+                'renter_id' => (int) $appointment->renter_id,
+                'cancellation_reason' => $reason,
+            ];
+        }
+
+        return $notifications;
+    }
+
     /** @return array{appointment_id: int, listing_id: int, listing_title: string, landlord_id: int, renter_id: int, viewing_at: string} */
     private function notificationContext(Appointment $appointment, Listing $listing, ?ViewingSlot $slot = null): array
     {
@@ -433,7 +499,12 @@ class AppointmentService
             'APPOINTMENT_ACCEPTED' => 'appointment_accepted_message',
             'APPOINTMENT_REJECTED' => 'appointment_rejected_message',
             'APPOINTMENT_CANCELLED' => 'appointment_cancelled_message',
-            default => $reason === 'rented' ? 'appointment_auto_cancelled_rented_message' : 'appointment_auto_cancelled_overdue_message',
+            default => match ($reason) {
+                'rented' => 'appointment_auto_cancelled_rented_message',
+                'LISTING_SUSPENDED' => 'appointment_auto_cancelled_suspended_message',
+                'LANDLORD_ACCOUNT_LOCKED' => 'appointment_auto_cancelled_locked_message',
+                default => 'appointment_auto_cancelled_overdue_message',
+            },
         };
 
         $titleKey = match ($type) {

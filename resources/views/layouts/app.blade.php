@@ -78,6 +78,14 @@
                                     <i class="size-[18px]" data-lucide="shield-check"></i>
                                     {{ __('ui.layout.admin_moderation') }}
                                 </a>
+                                <a
+                                    class="inline-flex min-h-11 items-center justify-center gap-2 rounded-control px-3 py-2 text-sm font-bold transition hover:bg-brand-50 hover:text-brand-800 {{ request()->routeIs('admin.reports.*') ? 'bg-brand-50 text-brand-800' : 'text-slate-600' }}"
+                                    href="{{ route('admin.reports.index') }}"
+                                    @if (request()->routeIs('admin.reports.*')) aria-current="page" @endif
+                                >
+                                    <i class="size-[18px]" data-lucide="flag"></i>
+                                    {{ __('ui.layout.admin_reports') }}
+                                </a>
                             @endif
                             @php($unreadNotificationsCount = auth()->user()->appNotifications()->whereNull('read_at')->count())
                             <a

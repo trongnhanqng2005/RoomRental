@@ -283,6 +283,23 @@ class FavoritesWishlistTest extends TestCase
         $this->assertDatabaseCount('favorites', count($listings) - 1);
     }
 
+    public function test_favorite_of_locked_landlord_listing_remains_as_generic_unavailable_and_can_be_removed(): void
+    {
+        $renter = $this->userWithRoles('RENTER');
+        $listing = $this->createListing('Tin của chủ trọ đã khóa');
+        $renter->favorites()->attach($listing->id, ['created_at' => now()]);
+        $this->landlord->forceFill(['account_status' => 'LOCKED'])->save();
+
+        $response = $this->actingAs($renter)->get(route('wishlist.index'))->assertOk();
+        $response->assertSee(__('ui.favorites.unavailable'))
+            ->assertDontSee('Tin của chủ trọ đã khóa')
+            ->assertDontSee(route('public.listings.show', $listing));
+        $this->assertDatabaseHas('favorites', ['user_id' => $renter->id, 'listing_id' => $listing->id]);
+
+        $this->actingAs($renter)->delete(route('favorites.destroy', $listing))->assertRedirect();
+        $this->assertDatabaseMissing('favorites', ['user_id' => $renter->id, 'listing_id' => $listing->id]);
+    }
+
     public function test_unavailable_wishlist_item_does_not_expose_listing_or_moderation_content_and_public_detail_is_404(): void
     {
         $renter = $this->userWithRoles('RENTER');

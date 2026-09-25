@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Public\ListingSearchRequest;
 use App\Models\Amenity;
 use App\Models\Province;
+use App\Models\ReportReason;
 use App\Queries\ListingSearchQuery;
 use App\Services\AppointmentService;
 use Illuminate\Http\Request;
@@ -94,6 +95,14 @@ class ListingController extends Controller
         $canBookAppointment = $user !== null
             && $user->hasRole('RENTER')
             && (int) $listing->landlord_id !== (int) $user->id;
+        $canReport = $user !== null && (int) $listing->landlord_id !== (int) $user->id;
+        $reportReasons = $canReport
+            ? ReportReason::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id')
+            : collect();
+        $hasPendingReport = $canReport && $user->reportsSubmitted()
+            ->where('listing_id', $listing->id)
+            ->where('status', 'PENDING')
+            ->exists();
 
         return view('public.listings.show', compact(
             'listing',
@@ -105,6 +114,9 @@ class ListingController extends Controller
             'isFavorited',
             'bookableViewingSlots',
             'canBookAppointment',
+            'canReport',
+            'reportReasons',
+            'hasPendingReport',
         ));
     }
 }

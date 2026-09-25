@@ -47,6 +47,26 @@ class User extends Authenticatable
         return $this->hasMany(Appointment::class, 'renter_id');
     }
 
+    public function reportsSubmitted(): HasMany
+    {
+        return $this->hasMany(Report::class, 'reporter_id');
+    }
+
+    public function reportsHandled(): HasMany
+    {
+        return $this->hasMany(Report::class, 'handled_by');
+    }
+
+    public function enforcementActionsAsAdmin(): HasMany
+    {
+        return $this->hasMany(EnforcementAction::class, 'admin_id');
+    }
+
+    public function enforcementActionsTargetingUser(): HasMany
+    {
+        return $this->hasMany(EnforcementAction::class, 'target_user_id');
+    }
+
     public function favorites(): BelongsToMany
     {
         return $this->belongsToMany(Listing::class, 'favorites')

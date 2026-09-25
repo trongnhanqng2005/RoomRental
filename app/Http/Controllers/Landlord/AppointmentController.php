@@ -64,6 +64,8 @@ class AppointmentController extends Controller
         return match ($reason) {
             'VIEWING_TIME_PASSED' => __('ui.appointments.cancellation_reasons.overdue'),
             'LISTING_RENTED' => __('ui.appointments.cancellation_reasons.rented'),
+            'LISTING_SUSPENDED' => __('ui.appointments.cancellation_reasons.LISTING_SUSPENDED'),
+            'LANDLORD_ACCOUNT_LOCKED' => __('ui.appointments.cancellation_reasons.LANDLORD_ACCOUNT_LOCKED'),
             null, '' => null,
             default => $reason,
         };
