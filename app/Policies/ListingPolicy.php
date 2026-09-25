@@ -14,7 +14,7 @@ class ListingPolicy
 
     public function view(User $user, Listing $listing): bool
     {
-        return $this->owns($user, $listing);
+        return $this->owns($user, $listing) && $listing->deleted_at === null;
     }
 
     public function create(User $user): bool
@@ -24,22 +24,34 @@ class ListingPolicy
 
     public function update(User $user, Listing $listing): bool
     {
-        return $this->owns($user, $listing);
+        return $this->owns($user, $listing) && $listing->deleted_at === null;
     }
 
     public function updateOccupancy(User $user, Listing $listing): bool
     {
-        return $this->owns($user, $listing);
+        return $this->owns($user, $listing) && $listing->deleted_at === null;
     }
 
     public function updateVisibility(User $user, Listing $listing): bool
     {
-        return $this->owns($user, $listing) && $listing->visibility_status !== 'SUSPENDED';
+        return $this->owns($user, $listing)
+            && $listing->deleted_at === null
+            && $listing->visibility_status !== 'SUSPENDED';
+    }
+
+    public function renew(User $user, Listing $listing): bool
+    {
+        return $this->owns($user, $listing);
+    }
+
+    public function delete(User $user, Listing $listing): bool
+    {
+        return $this->owns($user, $listing);
     }
 
     public function manageViewingSlots(User $user, Listing $listing): bool
     {
-        return $this->owns($user, $listing);
+        return $this->owns($user, $listing) && $listing->deleted_at === null;
     }
 
     private function owns(User $user, Listing $listing): bool

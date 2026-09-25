@@ -18,6 +18,7 @@ class UserAccountLockTest extends ReportFeatureTestCase
             'visibility_status' => 'HIDDEN',
             'occupancy_status' => 'RENTED',
         ]);
+        $expiry = $listing->expires_at->toDateTimeString();
         $admin = $this->userWithRoles(['ADMIN']);
         $futureRenter = $this->userWithRoles(['RENTER']);
         $startedRenter = $this->userWithRoles(['RENTER']);
@@ -33,6 +34,7 @@ class UserAccountLockTest extends ReportFeatureTestCase
         $this->assertSame('LOCKED', $landlord->fresh()->account_status);
         $this->assertSame('HIDDEN', $listing->fresh()->visibility_status);
         $this->assertSame('RENTED', $listing->fresh()->occupancy_status);
+        $this->assertSame($expiry, $listing->fresh()->expires_at->toDateTimeString());
         $this->assertSame('AUTO_CANCELLED', $future->fresh()->status);
         $this->assertSame($admin->id, $future->fresh()->cancelled_by);
         $this->assertSame('LANDLORD_ACCOUNT_LOCKED', $future->fresh()->cancellation_reason);

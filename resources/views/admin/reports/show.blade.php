@@ -38,6 +38,9 @@
                     <div><span class="mb-1 block text-xs font-bold text-slate-500">{{ __('ui.listings.moderation_short') }}</span><x-ui.status-badge axis="moderation" :value="$listing->currentModeration?->status ?? 'PENDING'" /></div>
                     <div><span class="mb-1 block text-xs font-bold text-slate-500">{{ __('ui.listings.occupancy_short') }}</span><x-ui.status-badge axis="occupancy" :value="$listing->occupancy_status" /></div>
                     <div><span class="mb-1 block text-xs font-bold text-slate-500">{{ __('ui.listings.visibility_short') }}</span><x-ui.status-badge axis="visibility" :value="$listing->visibility_status" /></div>
+                    @if ($listing->expires_at)
+                        <div><span class="mb-1 block text-xs font-bold text-slate-500">{{ __('ui.listings.expires_at') }}</span><span class="text-sm font-semibold text-slate-700">{{ $listing->expires_at->format('d/m/Y H:i') }}</span></div>
+                    @endif
                 </div>
             </header>
 
@@ -146,6 +149,18 @@
                             <div><dt class="text-xs font-bold uppercase tracking-wide text-slate-500">{{ __('ui.reports.account_status') }}</dt><dd class="mt-1 font-semibold text-slate-700">{{ __('ui.reports.account_statuses.'.$landlord->account_status) }}</dd></div>
                         </dl>
                     </section>
+
+                    @if ($listing->visibility_status === 'SUSPENDED')
+                        <section class="spatial-card p-4 sm:p-5" aria-labelledby="unsuspend-heading">
+                            <h2 class="text-lg font-bold text-slate-950" id="unsuspend-heading">{{ __('ui.listings.unsuspend') }}</h2>
+                            <p class="mt-2 text-sm leading-6 text-slate-600">{{ __('ui.listings.unsuspend_description') }}</p>
+                            <form class="mt-4" method="POST" action="{{ route('admin.listings.unsuspend', $listing) }}" onsubmit="return confirm(@js(__('ui.listings.unsuspend_confirmation')))" data-submit-once>
+                                @csrf
+                                @method('PATCH')
+                                <x-ui.button class="w-full" type="submit" variant="secondary"><i class="size-4" data-lucide="shield-check" aria-hidden="true"></i>{{ __('ui.listings.unsuspend') }}</x-ui.button>
+                            </form>
+                        </section>
+                    @endif
 
                     @if ($report->status === 'PENDING')
                         <section class="spatial-card p-4 sm:p-5" aria-labelledby="decision-heading">

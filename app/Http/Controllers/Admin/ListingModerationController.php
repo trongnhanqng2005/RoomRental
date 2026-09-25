@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\RejectListingModerationRequest;
 use App\Models\Listing;
 use App\Models\ListingModeration;
+use App\Services\ListingLifecycleService;
 use App\Services\ListingModerationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -71,5 +72,12 @@ class ListingModerationController extends Controller
         return redirect()
             ->route('admin.listing-moderations.show', $listing)
             ->with('status', __('ui.admin_moderation.rejected'));
+    }
+
+    public function unsuspend(Listing $listing, ListingLifecycleService $lifecycleService): RedirectResponse
+    {
+        $lifecycleService->unsuspend($listing, request()->user());
+
+        return back()->with('status', __('ui.listings.unsuspended'));
     }
 }

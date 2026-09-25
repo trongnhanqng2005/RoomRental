@@ -13,6 +13,7 @@ use App\Models\FeeUnit;
 use App\Models\Listing;
 use App\Models\Province;
 use App\Models\RoomCategory;
+use App\Services\ListingLifecycleService;
 use App\Services\ListingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,7 +22,7 @@ use Illuminate\View\View;
 
 class ListingController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request, ListingLifecycleService $lifecycleService): View
     {
         Gate::authorize('viewAny', Listing::class);
 
@@ -58,6 +59,11 @@ class ListingController extends Controller
         };
 
         $listings = $query->orderBy(...$sortColumn)->paginate(10)->withQueryString();
+        $listings->getCollection()->each(function (Listing $listing) use ($lifecycleService, $user): void {
+            $listing->setAttribute('can_renew', $lifecycleService->canRenew($listing, $user));
+            $listing->setAttribute('effective_expires_at', $listing->effectiveExpiresAt());
+            $listing->setAttribute('is_expired', $listing->isExpired());
+        });
         $statsQuery = Listing::query()->where('landlord_id', $user->id)->whereNull('deleted_at');
 
         $stats = [
@@ -79,9 +85,14 @@ class ListingController extends Controller
 
     public function store(StoreListingRequest $request, ListingService $listingService): RedirectResponse
     {
-        $listingService->create($request->user(), $request->validated());
+        $listing = $listingService->create($request->user(), $request->validated());
+        $redirect = redirect()->route('landlord.listings.index')->with('status', __('ui.listings.created'));
 
-        return redirect()->route('landlord.listings.index')->with('status', __('ui.listings.created'));
+        if ($listingService->findDuplicateAddress($listing)) {
+            $redirect->with('duplicate_warning', __('ui.listings.duplicate_address_warning'));
+        }
+
+        return $redirect;
     }
 
     public function edit(Request $request, Listing $listing): View
@@ -97,9 +108,14 @@ class ListingController extends Controller
 
     public function update(UpdateListingRequest $request, Listing $listing, ListingService $listingService): RedirectResponse
     {
-        $listingService->update($listing, $request->validated());
+        $updated = $listingService->update($listing, $request->validated());
+        $redirect = redirect()->route('landlord.listings.index')->with('status', __('ui.listings.updated'));
 
-        return redirect()->route('landlord.listings.index')->with('status', __('ui.listings.updated'));
+        if ($listingService->findDuplicateAddress($updated)) {
+            $redirect->with('duplicate_warning', __('ui.listings.duplicate_address_warning'));
+        }
+
+        return $redirect;
     }
 
     public function updateOccupancy(UpdateListingOccupancyRequest $request, Listing $listing, ListingService $listingService): RedirectResponse
@@ -114,6 +130,22 @@ class ListingController extends Controller
         $listingService->updateVisibility($listing, $request->validated('visibility_status'));
 
         return back()->with('status', __('ui.listings.visibility_updated'));
+    }
+
+    public function renew(Request $request, Listing $listing, ListingLifecycleService $lifecycleService): RedirectResponse
+    {
+        Gate::authorize('renew', $listing);
+        $lifecycleService->renew($listing, $request->user());
+
+        return back()->with('status', __('ui.listings.renewed'));
+    }
+
+    public function destroy(Request $request, Listing $listing, ListingLifecycleService $lifecycleService): RedirectResponse
+    {
+        Gate::authorize('delete', $listing);
+        $lifecycleService->delete($listing, $request->user());
+
+        return redirect()->route('landlord.listings.index')->with('status', __('ui.listings.deleted'));
     }
 
     /**

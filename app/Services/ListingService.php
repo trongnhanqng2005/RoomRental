@@ -13,8 +13,10 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Throwable;
 
 class ListingService
@@ -76,7 +78,19 @@ class ListingService
 
         try {
             $updatedListing = DB::transaction(function () use ($listing, $data, &$newPaths, &$oldPaths): Listing {
+                $landlordId = Listing::query()->whereKey($listing->id)->value('landlord_id');
+
+                if ($landlordId === null) {
+                    abort(404);
+                }
+
+                User::query()->lockForUpdate()->findOrFail($landlordId);
                 $lockedListing = Listing::query()->lockForUpdate()->findOrFail($listing->id);
+
+                if ($lockedListing->deleted_at !== null) {
+                    throw new ConflictHttpException(__('ui.listings.lifecycle_stale'));
+                }
+
                 $existingImages = $lockedListing->images()->get();
 
                 $coreChanged = $this->coreAttributesChanged($lockedListing, $data);
@@ -129,6 +143,27 @@ class ListingService
         $this->deleteReplacedFilesAfterCommit($oldPaths, $listing->id);
 
         return $updatedListing;
+    }
+
+    public function findDuplicateAddress(Listing $listing): ?Listing
+    {
+        $normalizedAddress = $this->normalizeAddress($listing->street_address);
+
+        return Listing::query()
+            ->where('landlord_id', $listing->landlord_id)
+            ->where('ward_id', $listing->ward_id)
+            ->whereNull('deleted_at')
+            ->whereKeyNot($listing->id)
+            ->get()
+            ->first(fn (Listing $candidate): bool => $this->normalizeAddress($candidate->street_address) === $normalizedAddress);
+    }
+
+    private function normalizeAddress(string $address): string
+    {
+        $trimmed = preg_replace('/^[\s\p{Z}]+|[\s\p{Z}]+$/u', '', $address) ?? trim($address);
+        $collapsed = preg_replace('/[\s\p{Z}]+/u', ' ', $trimmed) ?? $trimmed;
+
+        return Str::lower($collapsed);
     }
 
     public function updateOccupancy(Listing $listing, string $status, User $actor): void

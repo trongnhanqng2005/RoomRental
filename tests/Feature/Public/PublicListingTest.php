@@ -84,6 +84,32 @@ class PublicListingTest extends TestCase
         $this->assertSame('APPROVED', $eligible->currentModeration->status);
     }
 
+    public function test_expiry_boundary_is_exclusive_for_persisted_and_legacy_expiry(): void
+    {
+        $boundary = now()->startOfSecond();
+        $this->travelTo($boundary);
+        $beforeBoundary = $this->createListing('Còn hạn ngay trước mốc', [
+            'expires_at' => $boundary->copy()->addSecond(),
+        ]);
+        $atBoundary = $this->createListing('Hết hạn đúng mốc', [
+            'expires_at' => $boundary,
+        ]);
+        $legacyAtBoundary = $this->createListing('Hết hạn theo duyệt đúng mốc', [
+            'expires_at' => null,
+            'reviewed_at' => $boundary->copy()->subDays(30),
+        ]);
+
+        $this->get('/rooms')
+            ->assertOk()
+            ->assertSee('Còn hạn ngay trước mốc')
+            ->assertDontSee('Hết hạn đúng mốc')
+            ->assertDontSee('Hết hạn theo duyệt đúng mốc');
+
+        $this->get(route('public.listings.show', $atBoundary))->assertNotFound();
+        $this->get(route('public.listings.show', $legacyAtBoundary))->assertNotFound();
+        $this->assertNull($beforeBoundary->fresh()->deleted_at);
+    }
+
     public function test_prior_approved_moderation_does_not_qualify_a_current_pending_listing(): void
     {
         $listing = $this->createListing('Phiên hiện tại đang chờ', ['moderation_status' => 'APPROVED']);

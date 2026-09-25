@@ -67,6 +67,12 @@ class ListingModerationService
                 throw new ConflictHttpException(__('ui.admin_moderation.stale_decision'));
             }
 
+            if ($status === 'APPROVED') {
+                $lockedListing->forceFill([
+                    'expires_at' => $reviewedAt->copy()->addDays(30),
+                ])->save();
+            }
+
             AuditLog::query()->create([
                 'actor_user_id' => $reviewer->id,
                 'action' => $status === 'APPROVED'

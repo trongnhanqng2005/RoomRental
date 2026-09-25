@@ -87,6 +87,7 @@ Route::middleware(['auth', 'role:ADMIN,SUPER_ADMIN'])
         Route::get('/listing-moderations/{listing}', [ListingModerationController::class, 'show'])->name('listing-moderations.show');
         Route::post('/listing-moderations/{listing}/moderations/{moderation}/approve', [ListingModerationController::class, 'approve'])->name('listing-moderations.approve');
         Route::post('/listing-moderations/{listing}/moderations/{moderation}/reject', [ListingModerationController::class, 'reject'])->name('listing-moderations.reject');
+        Route::patch('/listings/{listing}/unsuspend', [ListingModerationController::class, 'unsuspend'])->whereNumber('listing')->name('listings.unsuspend');
         Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
         Route::get('/reports/{report}', [AdminReportController::class, 'show'])->whereNumber('report')->name('reports.show');
         Route::post('/reports/{report}/dismiss', [AdminReportController::class, 'dismiss'])->whereNumber('report')->name('reports.dismiss');
@@ -124,5 +125,7 @@ Route::middleware('auth')->prefix('landlord')->name('landlord.')->group(function
         Route::put('/listings/{listing}', [ListingController::class, 'update'])->name('listings.update');
         Route::patch('/listings/{listing}/occupancy', [ListingController::class, 'updateOccupancy'])->name('listings.occupancy');
         Route::patch('/listings/{listing}/visibility', [ListingController::class, 'updateVisibility'])->name('listings.visibility');
+        Route::post('/listings/{listing}/renew', [ListingController::class, 'renew'])->name('listings.renew');
+        Route::delete('/listings/{listing}', [ListingController::class, 'destroy'])->name('listings.destroy');
     });
 });
