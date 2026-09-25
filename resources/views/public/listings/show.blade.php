@@ -166,6 +166,56 @@
                         </dl>
                     </section>
 
+                    <section class="spatial-card p-4 sm:p-5" aria-labelledby="report-heading">
+                        <h2 class="text-lg font-bold text-slate-950" id="report-heading">{{ __('ui.reports.heading') }}</h2>
+                        <p class="mt-2 text-sm leading-6 text-slate-600">{{ __('ui.reports.description') }}</p>
+
+                        @if (session('status'))
+                            <p class="mt-3 rounded-control border border-success-100 bg-success-50 p-3 text-sm font-semibold text-success-700" role="status" aria-live="polite">{{ session('status') }}</p>
+                        @endif
+
+                        @error('report')
+                            <p class="mt-3 rounded-control border border-danger-100 bg-danger-50 p-3 text-sm font-semibold text-danger-700" role="alert">{{ $message }}</p>
+                        @enderror
+
+                        @if ($canReport)
+                            @if ($hasPendingReport)
+                                <p class="mt-3 rounded-control border border-information-100 bg-information-50 p-3 text-sm font-semibold text-information-700" role="status">{{ __('ui.reports.pending_exists') }}</p>
+                            @elseif ($reportReasons->isEmpty())
+                                <p class="mt-3 rounded-control border border-line bg-slate-50 p-3 text-sm text-slate-600" role="status">{{ __('ui.reports.no_reasons') }}</p>
+                            @else
+                                <form class="mt-4 space-y-4" method="POST" action="{{ route('reports.store', $listing) }}" data-submit-once>
+                                    @csrf
+                                    <x-ui.error-summary :fields="['reason_id' => __('ui.reports.reason'), 'description' => __('ui.reports.description_field')]" id="report-errors" />
+                                    <x-ui.select
+                                        name="reason_id"
+                                        :label="__('ui.reports.reason')"
+                                        :options="$reportReasons"
+                                        :placeholder="__('ui.reports.select_reason')"
+                                        :required="true"
+                                    />
+                                    <x-ui.textarea
+                                        name="description"
+                                        :label="__('ui.reports.description_field')"
+                                        :hint="__('ui.reports.description_hint')"
+                                        rows="4"
+                                    />
+                                    <x-ui.button class="w-full" type="submit" variant="secondary">
+                                        <i class="size-4" data-lucide="flag"></i>
+                                        {{ __('ui.reports.submit') }}
+                                    </x-ui.button>
+                                </form>
+                            @endif
+                        @endif
+
+                        @if (! auth()->check())
+                            <a class="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-control border border-slate-300 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600" href="{{ route('login') }}">
+                                <i class="size-4" data-lucide="log-in"></i>
+                                {{ __('ui.reports.login_to_report') }}
+                            </a>
+                        @endif
+                    </section>
+
                     <section class="spatial-card p-4 sm:p-5" aria-labelledby="viewing-slots-heading">
                         <h2 class="text-lg font-bold text-slate-950" id="viewing-slots-heading">{{ __('ui.appointments.available_slots') }}</h2>
                         <p class="mt-2 text-sm leading-6 text-slate-600">{{ __('ui.appointments.booking_window_hint') }}</p>

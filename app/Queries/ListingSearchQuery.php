@@ -19,6 +19,7 @@ class ListingSearchQuery
             ->whereNull('deleted_at')
             ->where('visibility_status', 'VISIBLE')
             ->where('occupancy_status', 'AVAILABLE')
+            ->whereHas('landlord', fn (Builder $landlord) => $landlord->where('account_status', 'ACTIVE'))
             ->whereHas('currentModeration', fn (Builder $moderation) => $moderation->where('status', 'APPROVED'))
             ->where(function (Builder $expiry) use ($now, $expiryCutoff): void {
                 $expiry->where('expires_at', '>', $now)

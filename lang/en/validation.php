@@ -3,6 +3,7 @@
 return [
     'array' => 'The :attribute field must be a valid list.',
     'between' => ['numeric' => 'The :attribute must be between :min and :max.'],
+    'exists' => 'The selected :attribute is invalid.',
     'file' => 'The :attribute must be a valid file.',
     'gt' => ['numeric' => 'The :attribute must be greater than :value.'],
     'image' => 'The :attribute must be an image.',
@@ -35,6 +36,7 @@ return [
     'appointment_outside_window' => 'Viewings can be booked from 2 hours to 30 days ahead.',
     'appointment_started' => 'An appointment cannot be cancelled after its viewing has started.',
     'appointment_not_complete' => 'Only accepted appointments can be completed after the viewing slot ends.',
+    'report_description_too_long' => 'The additional information exceeds the allowed storage size.',
     'attributes' => [
         'category_id' => 'room category',
         'title' => 'title',
@@ -67,6 +69,10 @@ return [
         'renter_note' => 'note for the landlord',
         'landlord_response' => 'landlord response',
         'cancellation_reason' => 'cancellation reason',
+        'reason_id' => 'report reason',
+        'resolution_reason' => 'dismissal reason',
+        'action_type' => 'enforcement action',
+        'reason' => 'enforcement reason',
         'q' => 'keyword',
         'min_price' => 'minimum rent',
         'max_price' => 'maximum rent',

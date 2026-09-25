@@ -77,6 +77,16 @@ class Listing extends Model
         return $this->hasMany(ViewingSlot::class);
     }
 
+    public function reports(): HasMany
+    {
+        return $this->hasMany(Report::class);
+    }
+
+    public function enforcementActions(): HasMany
+    {
+        return $this->hasMany(EnforcementAction::class, 'target_listing_id');
+    }
+
     protected function casts(): array
     {
         return [
