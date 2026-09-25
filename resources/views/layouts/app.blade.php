@@ -97,6 +97,22 @@
                                     <i class="size-[18px]" data-lucide="users"></i>
                                     {{ __('ui.layout.admin_users') }}
                                 </a>
+                                <a
+                                    class="inline-flex min-h-11 items-center justify-center gap-2 rounded-control px-3 py-2 text-sm font-bold transition hover:bg-brand-50 hover:text-brand-800 {{ request()->routeIs('admin.categories.*') ? 'bg-brand-50 text-brand-800' : 'text-slate-600' }}"
+                                    href="{{ route('admin.categories.index') }}"
+                                    @if (request()->routeIs('admin.categories.*')) aria-current="page" @endif
+                                >
+                                    <i class="size-[18px]" data-lucide="list"></i>
+                                    {{ __('ui.layout.admin_categories') }}
+                                </a>
+                                <a
+                                    class="inline-flex min-h-11 items-center justify-center gap-2 rounded-control px-3 py-2 text-sm font-bold transition hover:bg-brand-50 hover:text-brand-800 {{ request()->routeIs('admin.amenities.*') ? 'bg-brand-50 text-brand-800' : 'text-slate-600' }}"
+                                    href="{{ route('admin.amenities.index') }}"
+                                    @if (request()->routeIs('admin.amenities.*')) aria-current="page" @endif
+                                >
+                                    <i class="size-[18px]" data-lucide="sparkles"></i>
+                                    {{ __('ui.layout.admin_amenities') }}
+                                </a>
                             @endif
                             @php($unreadNotificationsCount = auth()->user()->appNotifications()->whereNull('read_at')->count())
                             <a

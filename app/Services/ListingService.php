@@ -2,10 +2,12 @@
 
 namespace App\Services;
 
+use App\Models\Amenity;
 use App\Models\Listing;
 use App\Models\ListingImage;
 use App\Models\ListingModeration;
 use App\Models\Role;
+use App\Models\RoomCategory;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Collection;
@@ -34,6 +36,8 @@ class ListingService
             $listing = DB::transaction(function () use ($user, $data, &$newPaths): Listing {
                 $lockedUser = User::query()->lockForUpdate()->with('profile')->findOrFail($user->id);
                 $this->ensurePostingPrerequisites($lockedUser);
+                $this->ensureCategoryCanBeAssigned((int) $data['category_id']);
+                $this->ensureAmenitiesCanBeAssigned($data['amenity_ids'] ?? []);
 
                 $listing = new Listing;
                 $listing->landlord_id = $lockedUser->id;
@@ -90,6 +94,9 @@ class ListingService
                 if ($lockedListing->deleted_at !== null) {
                     throw new ConflictHttpException(__('ui.listings.lifecycle_stale'));
                 }
+
+                $this->ensureCategoryCanBeAssigned((int) $data['category_id'], $lockedListing);
+                $this->ensureAmenitiesCanBeAssigned($data['amenity_ids'] ?? [], $lockedListing);
 
                 $existingImages = $lockedListing->images()->get();
 
@@ -236,6 +243,49 @@ class ListingService
 
         if ($errors !== []) {
             throw ValidationException::withMessages($errors);
+        }
+    }
+
+    /** @throws ValidationException */
+    private function ensureCategoryCanBeAssigned(int $categoryId, ?Listing $listing = null): void
+    {
+        $category = RoomCategory::query()->lockForUpdate()->find($categoryId);
+
+        if ($category === null || (! $category->is_active && (int) $listing?->category_id !== $categoryId)) {
+            throw ValidationException::withMessages(['category_id' => __('validation.listing_catalog_unavailable')]);
+        }
+    }
+
+    /**
+     * @param  array<int, mixed>  $amenityIds
+     *
+     * @throws ValidationException
+     */
+    private function ensureAmenitiesCanBeAssigned(array $amenityIds, ?Listing $listing = null): void
+    {
+        $amenityIds = collect($amenityIds)->map(fn ($id) => (int) $id)->unique()->sort()->values();
+
+        if ($amenityIds->isEmpty()) {
+            return;
+        }
+
+        $amenities = Amenity::query()
+            ->whereKey($amenityIds)
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->get()
+            ->keyBy('id');
+        $currentlyAttachedIds = $listing?->amenities()
+            ->pluck('amenities.id')
+            ->map(fn ($id) => (int) $id)
+            ->all() ?? [];
+
+        foreach ($amenityIds as $amenityId) {
+            $amenity = $amenities->get($amenityId);
+
+            if ($amenity === null || (! $amenity->is_active && ! in_array($amenityId, $currentlyAttachedIds, true))) {
+                throw ValidationException::withMessages(['amenity_ids' => __('validation.listing_catalog_unavailable')]);
+            }
         }
     }
 

@@ -2,7 +2,9 @@
     $isEdit = isset($listing);
     $currentListing = $isEdit ? $listing : null;
     $formAction = $isEdit ? route('landlord.listings.update', $currentListing) : route('landlord.listings.store');
-    $oldAmenityIds = old('amenity_ids', $currentListing?->amenities->pluck('id')->all() ?? []);
+    $oldAmenityIds = old('amenity_ids_submitted') !== null
+        ? (array) old('amenity_ids', [])
+        : old('amenity_ids', $currentListing?->amenities->pluck('id')->all() ?? []);
     $oldFees = old('fees', $currentListing?->fees->map(fn ($fee) => [
         'fee_type_id' => $fee->fee_type_id,
         'fee_unit_id' => $fee->fee_unit_id,
@@ -72,7 +74,7 @@
             <x-ui.select
                 name="category_id"
                 :label="__('ui.listings.category')"
-                :options="$categories->pluck('name', 'id')->all()"
+                :options="$categories->mapWithKeys(fn ($category) => [$category->id => $category->is_active ? $category->name : $category->name.' · '.__('ui.listings.currently_hidden')])->all()"
                 :value="$currentListing?->category_id"
                 :placeholder="__('ui.listings.select_category')"
                 required
@@ -185,6 +187,7 @@
     <fieldset class="space-y-5">
         <legend class="text-xl font-bold tracking-[-0.03em] text-slate-950">{{ __('ui.listings.amenities_section') }}</legend>
         <p class="text-sm leading-6 text-slate-500">{{ __('ui.listings.amenities_description') }}</p>
+        <input type="hidden" name="amenity_ids_submitted" value="1">
 
         @if ($amenities->isEmpty())
             <p class="rounded-control border border-line bg-slate-50 p-4 text-sm leading-6 text-slate-500">{{ __('ui.listings.no_amenities') }}</p>
@@ -193,7 +196,7 @@
                 @foreach ($amenities as $amenity)
                     <label class="flex min-h-12 cursor-pointer items-center gap-3 rounded-control border border-line bg-white px-4 py-3 text-sm font-semibold text-slate-700 has-[:checked]:border-brand-400 has-[:checked]:bg-brand-50 has-[:checked]:text-brand-800">
                         <input class="size-4 accent-brand-600" type="checkbox" name="amenity_ids[]" value="{{ $amenity->id }}" @checked(in_array($amenity->id, array_map('intval', (array) $oldAmenityIds), true))>
-                        {{ $amenity->name }}
+                        <span>{{ $amenity->name }}@unless ($amenity->is_active) · {{ __('ui.listings.currently_hidden') }}@endunless</span>
                     </label>
                 @endforeach
             </div>

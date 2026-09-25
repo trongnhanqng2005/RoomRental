@@ -18,6 +18,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use RuntimeException;
 use Tests\TestCase;
 
@@ -66,6 +67,127 @@ class ListingManagementTest extends TestCase
 
         $this->actingAs($renter)->get(route('landlord.listings.create'))->assertOk();
         $this->actingAs($renter)->get(route('landlord.listings.index'))->assertForbidden();
+    }
+
+    public function test_new_listing_form_and_validation_use_active_catalog_items_only(): void
+    {
+        $hiddenCategory = RoomCategory::query()->create(['name' => 'Danh mục đã ẩn', 'is_active' => false]);
+        $hiddenAmenity = Amenity::query()->create(['name' => 'Tiện nghi đã ẩn', 'is_active' => false]);
+        $user = $this->userWithRole('RENTER');
+
+        $this->actingAs($user)
+            ->get(route('landlord.listings.create'))
+            ->assertOk()
+            ->assertDontSee('Danh mục đã ẩn')
+            ->assertDontSee('Tiện nghi đã ẩn');
+
+        $this->actingAs($user)
+            ->from(route('landlord.listings.create'))
+            ->post(route('landlord.listings.store'), $this->validData([
+                'category_id' => $hiddenCategory->id,
+                'amenity_ids' => [$hiddenAmenity->id],
+            ]))
+            ->assertSessionHasErrors(['category_id', 'amenity_ids.0']);
+
+        try {
+            app(ListingService::class)->create($user, $this->validData(['category_id' => $hiddenCategory->id]));
+            $this->fail('A hidden category must also be rejected inside the listing transaction.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('category_id', $exception->errors());
+        }
+
+        try {
+            app(ListingService::class)->create($user, $this->validData(['amenity_ids' => [$hiddenAmenity->id]]));
+            $this->fail('A hidden amenity must also be rejected inside the listing transaction.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('amenity_ids', $exception->errors());
+        }
+
+        $this->assertDatabaseCount('listings', 0);
+    }
+
+    public function test_hidden_current_category_can_be_preserved_but_another_hidden_category_cannot_be_assigned(): void
+    {
+        $owner = $this->userWithRole('LANDLORD');
+        $listing = $this->createListing($owner);
+        $this->category->forceFill(['is_active' => false])->save();
+        $otherHiddenCategory = RoomCategory::query()->create(['name' => 'Danh mục ẩn khác', 'is_active' => false]);
+
+        $this->actingAs($owner)
+            ->get(route('landlord.listings.edit', $listing))
+            ->assertOk()
+            ->assertSee('Phòng trọ · Đang ẩn');
+
+        $this->actingAs($owner)
+            ->put(route('landlord.listings.update', $listing), $this->updateData($listing, ['title' => 'Giữ danh mục hiện tại']))
+            ->assertRedirect(route('landlord.listings.index'));
+
+        $this->assertSame($this->category->id, $listing->fresh()->category_id);
+        $this->assertSame(2, $listing->moderations()->count());
+
+        $this->actingAs($owner)
+            ->from(route('landlord.listings.edit', $listing))
+            ->put(route('landlord.listings.update', $listing), $this->updateData($listing, ['category_id' => $otherHiddenCategory->id]))
+            ->assertSessionHasErrors('category_id');
+
+        $activeCategory = RoomCategory::query()->create(['name' => 'Danh mục đang dùng', 'is_active' => true]);
+        $this->actingAs($owner)
+            ->put(route('landlord.listings.update', $listing), $this->updateData($listing, ['category_id' => $activeCategory->id]))
+            ->assertRedirect(route('landlord.listings.index'));
+        $this->assertSame($activeCategory->id, $listing->fresh()->category_id);
+    }
+
+    public function test_hidden_attached_amenity_is_preserved_when_omitted_and_can_only_be_removed_explicitly(): void
+    {
+        $owner = $this->userWithRole('LANDLORD');
+        $listing = $this->createListing($owner);
+        $otherListing = $this->createListing($owner, 'Tin không có tiện nghi ẩn');
+        $otherListing->amenities()->detach($this->amenity->id);
+        $this->amenity->forceFill(['is_active' => false])->save();
+
+        $this->actingAs($owner)
+            ->get(route('landlord.listings.edit', $listing))
+            ->assertOk()
+            ->assertSee('Wi-Fi · Đang ẩn');
+
+        $legacyPayload = $this->updateData($listing, ['title' => 'Không làm mất tiện nghi']);
+        unset($legacyPayload['amenity_ids']);
+        $this->actingAs($owner)
+            ->put(route('landlord.listings.update', $listing), $legacyPayload)
+            ->assertRedirect(route('landlord.listings.index'));
+
+        $this->assertDatabaseHas('listing_amenities', [
+            'listing_id' => $listing->id,
+            'amenity_id' => $this->amenity->id,
+        ]);
+
+        $this->actingAs($owner)
+            ->put(route('landlord.listings.update', $listing), $this->updateData($listing, [
+                'amenity_ids' => [],
+                'amenity_ids_submitted' => '1',
+                'description' => 'Đã bỏ tiện nghi đang ẩn.',
+            ]))
+            ->assertRedirect(route('landlord.listings.index'));
+        $this->assertDatabaseMissing('listing_amenities', [
+            'listing_id' => $listing->id,
+            'amenity_id' => $this->amenity->id,
+        ]);
+
+        $this->actingAs($owner)
+            ->from(route('landlord.listings.edit', $listing))
+            ->put(route('landlord.listings.update', $listing), $this->updateData($listing, [
+                'amenity_ids' => [$this->amenity->id],
+                'amenity_ids_submitted' => '1',
+            ]))
+            ->assertSessionHasErrors('amenity_ids.0');
+
+        $this->actingAs($owner)
+            ->from(route('landlord.listings.edit', $otherListing))
+            ->put(route('landlord.listings.update', $otherListing), $this->updateData($otherListing, [
+                'amenity_ids' => [$this->amenity->id],
+                'amenity_ids_submitted' => '1',
+            ]))
+            ->assertSessionHasErrors('amenity_ids.0');
     }
 
     public function test_first_listing_requires_phone_and_contact_address(): void
