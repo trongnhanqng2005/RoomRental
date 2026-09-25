@@ -23,6 +23,12 @@
                     <span>{{ session('status') }}</span>
                 </div>
             @endif
+            @if (session('duplicate_warning'))
+                <div class="mt-4 flex items-start gap-3 rounded-control border border-warning-100 bg-warning-50 p-4 text-sm font-semibold leading-6 text-warning-900" role="status" aria-live="polite">
+                    <i class="mt-0.5 size-5 shrink-0" data-lucide="circle-alert" aria-hidden="true"></i>
+                    <span>{{ session('duplicate_warning') }}</span>
+                </div>
+            @endif
 
             <div class="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 @foreach ([['total', 'list', 'brand'], ['pending', 'clock-3', 'warning'], ['available', 'door-open', 'accent'], ['views', 'eye', 'slate']] as [$key, $icon, $tone])
@@ -119,6 +125,13 @@
                                                     <p class="font-bold text-slate-950">{{ $listing->title }}</p>
                                                     <p class="mt-1 text-xs font-semibold text-brand-700">{{ $listing->category->name }}</p>
                                                     <p class="mt-2 max-w-sm truncate text-xs text-slate-500">{{ $listing->street_address }}, {{ $listing->ward->name }}, {{ $listing->ward->district->name }}</p>
+                                                    @if ($listing->effective_expires_at)
+                                                        <p class="mt-2 text-xs font-semibold {{ $listing->is_expired ? 'text-danger-700' : 'text-slate-600' }}">
+                                                            {{ __('ui.listings.expires_at') }}: {{ $listing->effective_expires_at->format('d/m/Y H:i') }} · {{ $listing->is_expired ? __('ui.listings.expired') : __('ui.listings.active') }}
+                                                        </p>
+                                                    @else
+                                                        <p class="mt-2 text-xs font-semibold text-slate-600">{{ __('ui.listings.expiry_pending') }}</p>
+                                                    @endif
                                                 </div>
                                             </div>
                                         </td>
@@ -130,6 +143,17 @@
                                             <div class="flex min-w-40 flex-col items-stretch gap-2">
                                                 <a class="inline-flex min-h-10 items-center justify-center gap-2 rounded-control border border-slate-300 px-3 text-xs font-bold text-slate-700 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800" href="{{ route('landlord.listings.edit', $listing) }}"><i class="size-4" data-lucide="pencil"></i>{{ __('ui.listings.edit') }}</a>
                                                 <a class="inline-flex min-h-10 items-center justify-center gap-2 rounded-control border border-slate-300 px-3 text-xs font-bold text-slate-700 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800" href="{{ route('landlord.viewing-slots.index', $listing) }}"><i class="size-4" data-lucide="calendar-days"></i>{{ __('ui.appointments.manage_slots') }}</a>
+                                                @if ($listing->can_renew)
+                                                    <form method="POST" action="{{ route('landlord.listings.renew', $listing) }}">
+                                                        @csrf
+                                                        <button class="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-control bg-brand-600 px-3 text-xs font-bold text-white hover:bg-brand-700" type="submit"><i class="size-4" data-lucide="calendar-plus-2" aria-hidden="true"></i>{{ __('ui.listings.renew') }}</button>
+                                                    </form>
+                                                @endif
+                                                <form method="POST" action="{{ route('landlord.listings.destroy', $listing) }}" onsubmit="return confirm(@js(__('ui.listings.delete_confirmation', ['title' => $listing->title])))">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button class="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-control px-3 text-xs font-bold text-danger-700 hover:bg-danger-50" type="submit"><i class="size-4" data-lucide="trash-2" aria-hidden="true"></i>{{ __('ui.listings.delete') }}</button>
+                                                </form>
                                                 <form method="POST" action="{{ route('landlord.listings.occupancy', $listing) }}">
                                                     @csrf
                                                     @method('PATCH')
@@ -166,6 +190,13 @@
                                     <h2 class="break-words text-base font-bold text-slate-950">{{ $listing->title }}</h2>
                                     <p class="mt-1 text-xs font-semibold text-brand-700">{{ $listing->category->name }}</p>
                                     <p class="mt-2 text-xs leading-5 text-slate-500">{{ $listing->street_address }}, {{ $listing->ward->name }}</p>
+                                    @if ($listing->effective_expires_at)
+                                        <p class="mt-2 text-xs font-semibold {{ $listing->is_expired ? 'text-danger-700' : 'text-slate-600' }}">
+                                            {{ __('ui.listings.expires_at') }}: {{ $listing->effective_expires_at->format('d/m/Y H:i') }} · {{ $listing->is_expired ? __('ui.listings.expired') : __('ui.listings.active') }}
+                                        </p>
+                                    @else
+                                        <p class="mt-2 text-xs font-semibold text-slate-600">{{ __('ui.listings.expiry_pending') }}</p>
+                                    @endif
                                 </div>
                             </div>
                             <p class="mt-4 text-lg font-bold text-slate-950">{{ number_format((float) $listing->monthly_rent, 0, ',', '.') }} ₫ <span class="text-xs font-semibold text-slate-500">/ {{ __('ui.listings.monthly_rent') }}</span></p>
@@ -179,6 +210,17 @@
                                 <a class="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-control border border-slate-300 px-3 text-xs font-bold text-slate-700 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800" href="{{ route('landlord.viewing-slots.index', $listing) }}"><i class="size-4" data-lucide="calendar-days"></i>{{ __('ui.appointments.manage_slots') }}</a>
                             </div>
                             <div class="mt-2 grid gap-2 sm:grid-cols-2">
+                                @if ($listing->can_renew)
+                                    <form method="POST" action="{{ route('landlord.listings.renew', $listing) }}">
+                                        @csrf
+                                        <button class="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-control bg-brand-600 px-3 text-xs font-bold text-white hover:bg-brand-700" type="submit"><i class="size-4" data-lucide="calendar-plus-2" aria-hidden="true"></i>{{ __('ui.listings.renew') }}</button>
+                                    </form>
+                                @endif
+                                <form method="POST" action="{{ route('landlord.listings.destroy', $listing) }}" onsubmit="return confirm(@js(__('ui.listings.delete_confirmation', ['title' => $listing->title])))">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-control px-3 text-xs font-bold text-danger-700 hover:bg-danger-50" type="submit"><i class="size-4" data-lucide="trash-2" aria-hidden="true"></i>{{ __('ui.listings.delete') }}</button>
+                                </form>
                                 <form method="POST" action="{{ route('landlord.listings.occupancy', $listing) }}">
                                     @csrf
                                     @method('PATCH')

@@ -224,7 +224,10 @@ class ReportManagementTest extends ReportFeatureTestCase
     {
         $reporter = $this->userWithRoles(['RENTER']);
         $landlord = $this->userWithRoles(['LANDLORD']);
-        $listing = $this->listing($landlord, 'Tin bị tạm ngưng', ['occupancy_status' => 'RENTED']);
+        $listing = $this->listing($landlord, 'Tin bị tạm ngưng', [
+            'occupancy_status' => 'RENTED',
+            'expires_at' => now()->subDay(),
+        ]);
         $report = $this->report($reporter, $listing);
         $admin = $this->userWithRoles(['SUPER_ADMIN']);
         $pendingRenter = $this->userWithRoles(['RENTER']);
@@ -236,6 +239,7 @@ class ReportManagementTest extends ReportFeatureTestCase
         $rejected = $this->appointment($listing, $terminalRenter, 5, 'REJECTED');
         $past = $this->appointment($listing, $pastRenter, -1);
         $moderationId = $listing->current_moderation_id;
+        $expiry = $listing->expires_at->toDateTimeString();
 
         $this->actingAs($admin)
             ->post(route('admin.reports.resolve', $report), [
@@ -249,6 +253,7 @@ class ReportManagementTest extends ReportFeatureTestCase
         $report->refresh();
         $this->assertSame('SUSPENDED', $listing->visibility_status);
         $this->assertSame('RENTED', $listing->occupancy_status);
+        $this->assertSame($expiry, $listing->expires_at->toDateTimeString());
         $this->assertSame($moderationId, $listing->current_moderation_id);
         $this->assertSame('RESOLVED', $report->status);
 

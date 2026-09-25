@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Carbon;
 
 class Listing extends Model
 {
@@ -85,6 +86,24 @@ class Listing extends Model
     public function enforcementActions(): HasMany
     {
         return $this->hasMany(EnforcementAction::class, 'target_listing_id');
+    }
+
+    public function effectiveExpiresAt(): ?Carbon
+    {
+        if ($this->expires_at !== null) {
+            return $this->expires_at;
+        }
+
+        if ($this->currentModeration?->status !== 'APPROVED' || $this->currentModeration->reviewed_at === null) {
+            return null;
+        }
+
+        return $this->currentModeration->reviewed_at->copy()->addDays(30);
+    }
+
+    public function isExpired(): bool
+    {
+        return $this->effectiveExpiresAt()?->lessThanOrEqualTo(now()) ?? false;
     }
 
     protected function casts(): array

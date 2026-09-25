@@ -252,6 +252,28 @@ class AppointmentService
     }
 
     /**
+     * Must be called inside the listing deletion transaction while the listing row is locked.
+     *
+     * @return array<int, array{context: array<string, mixed>, renter_id: int, cancellation_reason: string}>
+     */
+    public function autoCancelFutureForDeletedListing(Listing $lockedListing, User $landlord): array
+    {
+        if (DB::transactionLevel() === 0) {
+            throw new RuntimeException('Deleted-listing appointment cancellation requires an active transaction.');
+        }
+
+        if (! $landlord->hasRole('LANDLORD') || (int) $lockedListing->landlord_id !== (int) $landlord->id) {
+            throw new AuthorizationException;
+        }
+
+        return $this->autoCancelFutureAppointments(
+            new Collection([$lockedListing]),
+            $landlord->id,
+            'LISTING_DELETED',
+        );
+    }
+
+    /**
      * @param  Collection<int, Listing>  $lockedListings
      * @return array<int, array{context: array<string, mixed>, renter_id: int, cancellation_reason: string}>
      */
@@ -503,6 +525,7 @@ class AppointmentService
                 'rented' => 'appointment_auto_cancelled_rented_message',
                 'LISTING_SUSPENDED' => 'appointment_auto_cancelled_suspended_message',
                 'LANDLORD_ACCOUNT_LOCKED' => 'appointment_auto_cancelled_locked_message',
+                'LISTING_DELETED' => 'appointment_auto_cancelled_deleted_message',
                 default => 'appointment_auto_cancelled_overdue_message',
             },
         };

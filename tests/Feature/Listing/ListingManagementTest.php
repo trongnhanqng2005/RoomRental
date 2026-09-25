@@ -129,6 +129,39 @@ class ListingManagementTest extends TestCase
         $this->assertDatabaseCount('listings', 2);
     }
 
+    public function test_same_landlord_duplicate_address_warns_without_blocking_creation(): void
+    {
+        $owner = $this->userWithRole('LANDLORD');
+        $this->createListing($owner, 'Phòng hiện có');
+
+        $this->actingAs($owner)
+            ->post(route('landlord.listings.store'), $this->validData([
+                'title' => 'Phòng cùng địa chỉ',
+                'street_address' => '  12   NGUYỄN TRÃI  ',
+            ]))
+            ->assertRedirect(route('landlord.listings.index'))
+            ->assertSessionHas('duplicate_warning');
+
+        $this->assertDatabaseCount('listings', 2);
+    }
+
+    public function test_address_changing_edit_warns_when_another_owned_listing_matches(): void
+    {
+        $owner = $this->userWithRole('LANDLORD');
+        $first = $this->createListing($owner, 'Phòng hiện có');
+        $second = $this->createListing($owner, 'Phòng chuyển địa chỉ');
+
+        $this->actingAs($owner)
+            ->put(route('landlord.listings.update', $second), $this->updateData($second, [
+                'street_address' => ' 12   nguyễn trãi ',
+            ]))
+            ->assertRedirect(route('landlord.listings.index'))
+            ->assertSessionHas('duplicate_warning');
+
+        $this->assertDatabaseHas('listings', ['id' => $first->id]);
+        $this->assertSame(2, Listing::query()->count());
+    }
+
     public function test_listing_validation_rejects_invalid_data_and_image_boundaries(): void
     {
         $user = $this->userWithRole('RENTER');
@@ -163,6 +196,9 @@ class ListingManagementTest extends TestCase
         $owner = $this->userWithRole('LANDLORD');
         $otherLandlord = $this->userWithRole('LANDLORD', 'other@example.com');
         $listing = $this->createListing($owner);
+        $listing->expires_at = now()->addDays(9);
+        $listing->save();
+        $expiry = $listing->expires_at->toDateTimeString();
         $otherListing = $this->createListing($otherLandlord, 'Other listing');
 
         $this->actingAs($owner)
@@ -178,6 +214,7 @@ class ListingManagementTest extends TestCase
         $this->assertSame(2, $listing->moderations()->count());
         $this->assertSame(2, $listing->currentModeration->version_no);
         $this->assertSame('PENDING', $listing->currentModeration->status);
+        $this->assertSame($expiry, $listing->expires_at->toDateTimeString());
         $this->assertDatabaseHas('listing_moderations', ['listing_id' => $listing->id, 'version_no' => 1, 'status' => 'PENDING']);
     }
 
@@ -185,18 +222,25 @@ class ListingManagementTest extends TestCase
     {
         $owner = $this->userWithRole('LANDLORD');
         $listing = $this->createListing($owner);
+        $listing->expires_at = now()->addDays(9);
+        $listing->save();
+        $expiry = $listing->expires_at->toDateTimeString();
 
         $this->actingAs($owner)
             ->put(route('landlord.listings.update', $listing), $this->updateData($listing))
             ->assertRedirect(route('landlord.listings.index'));
 
         $this->assertDatabaseCount('listing_moderations', 1);
+        $this->assertSame($expiry, $listing->fresh()->expires_at->toDateTimeString());
     }
 
     public function test_occupancy_and_visibility_change_independently_without_new_moderation(): void
     {
         $owner = $this->userWithRole('LANDLORD');
         $listing = $this->createListing($owner);
+        $listing->expires_at = now()->addDays(9);
+        $listing->save();
+        $expiry = $listing->expires_at->toDateTimeString();
 
         $this->actingAs($owner)
             ->patch(route('landlord.listings.occupancy', $listing), ['occupancy_status' => 'RENTED'])
@@ -209,6 +253,7 @@ class ListingManagementTest extends TestCase
         $listing->refresh();
         $this->assertSame('RENTED', $listing->occupancy_status);
         $this->assertSame('HIDDEN', $listing->visibility_status);
+        $this->assertSame($expiry, $listing->expires_at->toDateTimeString());
         $this->assertSame(1, $listing->moderations()->count());
     }
 

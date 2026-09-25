@@ -178,6 +178,10 @@ class ListingModerationTest extends TestCase
         $this->assertSame('APPROVED', $current->status);
         $this->assertSame($admin->id, $current->reviewed_by);
         $this->assertNotNull($current->reviewed_at);
+        $this->assertSame(
+            $current->reviewed_at->copy()->addDays(30)->toDateTimeString(),
+            $listing->expires_at->toDateTimeString(),
+        );
         $this->assertNull($current->rejection_reason);
         $this->assertSame($current->id, $listing->current_moderation_id);
         $this->assertSame('RENTED', $listing->occupancy_status);
@@ -202,6 +206,31 @@ class ListingModerationTest extends TestCase
             ->get(route('admin.listing-moderations.show', $listing))
             ->assertOk()
             ->assertSee('Đã duyệt');
+    }
+
+    public function test_approval_after_critical_edit_starts_a_fresh_expiry_period(): void
+    {
+        $admin = $this->userWithRole('ADMIN');
+        $landlord = $this->userWithRole('LANDLORD');
+        $listing = $this->createListing($landlord);
+        $originalExpiry = now()->addDays(4);
+        $listing->expires_at = $originalExpiry;
+        $listing->save();
+
+        app(ListingService::class)->update($listing, $this->criticalUpdateData($listing));
+        $pendingVersion = $listing->fresh()->currentModeration;
+        $this->assertSame($originalExpiry->toDateTimeString(), $listing->fresh()->expires_at->toDateTimeString());
+
+        $this->actingAs($admin)
+            ->post(route('admin.listing-moderations.approve', [$listing, $pendingVersion]))
+            ->assertRedirect();
+
+        $pendingVersion->refresh();
+        $listing->refresh();
+        $this->assertSame(
+            $pendingVersion->reviewed_at->copy()->addDays(30)->toDateTimeString(),
+            $listing->expires_at->toDateTimeString(),
+        );
     }
 
     public function test_admin_can_reject_current_pending_moderation_with_required_reason(): void
