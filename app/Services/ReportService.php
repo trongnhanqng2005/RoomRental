@@ -22,7 +22,10 @@ use Throwable;
 
 class ReportService
 {
-    public function __construct(private AppointmentService $appointmentService) {}
+    public function __construct(
+        private AppointmentService $appointmentService,
+        private AccountLockService $accountLockService,
+    ) {}
 
     public function submit(User $reporter, int $listingId, int $reasonId, ?string $description): Report
     {
@@ -157,12 +160,8 @@ class ReportService
                     $this->throwStaleAction();
                 }
 
-                $landlord->forceFill(['account_status' => 'LOCKED'])->save();
-                $appointmentNotifications = $this->appointmentService->autoCancelFutureForEnforcement(
-                    $listings,
-                    $admin,
-                    'LANDLORD_ACCOUNT_LOCKED',
-                );
+                $lock = $this->accountLockService->lock($landlord, $admin, cancelAppointmentsWhenAlreadyLocked: true);
+                $appointmentNotifications = $lock['appointment_notifications'];
             } else {
                 $listing = Listing::query()->lockForUpdate()->findOrFail($report->listing_id);
 
@@ -172,7 +171,7 @@ class ReportService
 
                 if ($actionType === 'SUSPEND_LISTING') {
                     $listing->forceFill(['visibility_status' => 'SUSPENDED'])->save();
-                    $appointmentNotifications = $this->appointmentService->autoCancelFutureForEnforcement(
+                    $appointmentNotifications = $this->appointmentService->autoCancelFutureForAdminAction(
                         new Collection([$listing]),
                         $admin,
                         'LISTING_SUSPENDED',
@@ -229,7 +228,7 @@ class ReportService
 
         $this->notifyHandledReport($notification);
         $this->notifyEnforcementTarget($notification);
-        $this->appointmentService->notifyEnforcementAppointments($notification['appointment_notifications']);
+        $this->appointmentService->notifyAutoCancelledAppointments($notification['appointment_notifications']);
     }
 
     private function authorizeAdmin(User $admin): void
