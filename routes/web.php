@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AmenityController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\ListingModerationController;
 use App\Http\Controllers\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Admin\RoomCategoryController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\TemporaryPasswordController;
 use App\Http\Controllers\Landlord\AppointmentController as LandlordAppointmentController;
+use App\Http\Controllers\Landlord\DashboardController as LandlordDashboardController;
 use App\Http\Controllers\Landlord\ListingController;
 use App\Http\Controllers\Landlord\LocationController;
 use App\Http\Controllers\Landlord\ViewingSlotController;
@@ -85,6 +87,7 @@ Route::middleware(['auth', 'role:ADMIN,SUPER_ADMIN'])
     ->name('admin.')
     ->scopeBindings()
     ->group(function () {
+        Route::get('/dashboard', AdminDashboardController::class)->name('dashboard');
         Route::get('/listing-moderations', [ListingModerationController::class, 'index'])->name('listing-moderations.index');
         Route::get('/listing-moderations/{listing}', [ListingModerationController::class, 'show'])->name('listing-moderations.show');
         Route::post('/listing-moderations/{listing}/moderations/{moderation}/approve', [ListingModerationController::class, 'approve'])->name('listing-moderations.approve');
@@ -122,6 +125,7 @@ Route::middleware('auth')->prefix('landlord')->name('landlord.')->group(function
     Route::get('/locations/districts/{district}/wards', [LocationController::class, 'wards'])->name('locations.wards');
 
     Route::middleware('role:LANDLORD')->group(function () {
+        Route::get('/dashboard', LandlordDashboardController::class)->name('dashboard');
         Route::get('/appointments', [LandlordAppointmentController::class, 'index'])->name('appointments.index');
         Route::post('/appointments/{appointment}/accept', [LandlordAppointmentController::class, 'accept'])->whereNumber('appointment')->name('appointments.accept');
         Route::post('/appointments/{appointment}/reject', [LandlordAppointmentController::class, 'reject'])->whereNumber('appointment')->name('appointments.reject');
