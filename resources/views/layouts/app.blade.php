@@ -74,6 +74,14 @@
                             @endif
                             @if (auth()->user()->hasAnyRole('ADMIN', 'SUPER_ADMIN'))
                                 <a
+                                    class="inline-flex min-h-11 items-center justify-center gap-2 rounded-control px-3 py-2 text-sm font-bold transition hover:bg-brand-50 hover:text-brand-800 {{ request()->routeIs('admin.dashboard') ? 'bg-brand-50 text-brand-800' : 'text-slate-600' }}"
+                                    href="{{ route('admin.dashboard') }}"
+                                    @if (request()->routeIs('admin.dashboard')) aria-current="page" @endif
+                                >
+                                    <i class="size-[18px]" data-lucide="layout-dashboard"></i>
+                                    {{ __('ui.layout.admin_dashboard') }}
+                                </a>
+                                <a
                                     class="inline-flex min-h-11 items-center justify-center gap-2 rounded-control px-3 py-2 text-sm font-bold transition hover:bg-brand-50 hover:text-brand-800 {{ request()->routeIs('admin.listing-moderations.*') ? 'bg-brand-50 text-brand-800' : 'text-slate-600' }}"
                                     href="{{ route('admin.listing-moderations.index') }}"
                                     @if (request()->routeIs('admin.listing-moderations.*')) aria-current="page" @endif
@@ -136,6 +144,14 @@
                                 </a>
                             @endif
                             @if (auth()->user()->hasRole('LANDLORD'))
+                                <a
+                                    class="inline-flex min-h-11 items-center justify-center gap-2 rounded-control px-3 py-2 text-sm font-bold transition hover:bg-brand-50 hover:text-brand-800 {{ request()->routeIs('landlord.dashboard') ? 'bg-brand-50 text-brand-800' : 'text-slate-600' }}"
+                                    href="{{ route('landlord.dashboard') }}"
+                                    @if (request()->routeIs('landlord.dashboard')) aria-current="page" @endif
+                                >
+                                    <i class="size-[18px]" data-lucide="layout-dashboard"></i>
+                                    {{ __('ui.layout.landlord_dashboard') }}
+                                </a>
                                 <a
                                     class="inline-flex min-h-11 items-center justify-center gap-2 rounded-control px-3 py-2 text-sm font-bold transition hover:bg-brand-50 hover:text-brand-800 {{ request()->routeIs('landlord.appointments.*') ? 'bg-brand-50 text-brand-800' : 'text-slate-600' }}"
                                     href="{{ route('landlord.appointments.index') }}"
