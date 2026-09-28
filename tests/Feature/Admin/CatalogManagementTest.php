@@ -292,7 +292,7 @@ class CatalogManagementTest extends ReportFeatureTestCase
         Amenity::query()->create(['name' => 'wi-fi', 'is_active' => false]);
     }
 
-    public function test_room_category_seeder_inserts_missing_rows_without_overwriting_admin_state_or_names(): void
+    public function test_room_category_seeder_preserves_renamed_and_hidden_admin_state_on_rerun(): void
     {
         $this->category->forceFill(['name' => 'Phòng thuê', 'is_active' => false])->save();
 
@@ -301,7 +301,7 @@ class CatalogManagementTest extends ReportFeatureTestCase
 
         $this->assertSame('Phòng thuê', $this->category->name);
         $this->assertFalse($this->category->is_active);
-        $this->assertDatabaseHas('room_categories', ['name' => 'Phòng trọ', 'is_active' => true]);
-        $this->assertDatabaseHas('room_categories', ['name' => 'Căn hộ mini', 'is_active' => true]);
+        $this->assertDatabaseCount('room_categories', 1);
+        $this->assertDatabaseMissing('room_categories', ['name' => 'Phòng trọ']);
     }
 }

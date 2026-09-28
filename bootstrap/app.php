@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\AddSecurityHeaders;
 use App\Http\Middleware\EnsureAccountIsActive;
 use App\Http\Middleware\EnsureTemporaryPasswordChanged;
 use App\Http\Middleware\EnsureUserHasRole;
@@ -25,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
             EnsureAccountIsActive::class,
             AuthenticateSession::class,
             EnsureTemporaryPasswordChanged::class,
+            AddSecurityHeaders::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
