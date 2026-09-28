@@ -1,58 +1,34 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# RoomRental
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+RoomRental is a Vietnamese-first room-rental discovery and management website. V1 supports public search, renter and landlord workflows, listing moderation, viewing appointments, favorites, reports and enforcement, Admin tools, and role-specific dashboards.
 
-## About Laravel
+## Stack
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+PHP 8.3, Laravel 13, MySQL 8, Blade, Tailwind CSS 4, Preline, Lucide, Plus Jakarta Sans, Vanilla JavaScript, and Vite.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Local quick start
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+1. Install PHP 8.3 with the required Laravel extensions, Composer, Node.js/npm, and MySQL 8.0.16 or later.
+2. Create an empty local MySQL database and copy `.env.example` to `.env`. Set the local database name and credentials.
+3. Run `composer install`, `npm ci`, and `php artisan key:generate`.
+4. Run `php artisan migrate:fresh --seed` **only against the empty disposable local database**.
+5. Run `php artisan storage:link` and `npm run build`.
+6. Start through Laragon or `php artisan serve`.
 
-## Learning Laravel
+The seed command installs reference rows only. To populate local demo actors and listings, follow [`docs/demo.md`](docs/demo.md). Never run `migrate:fresh` against shared or production data.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Quality checks
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Tests require a separate local MySQL database named `room_rental_test`; confirm its host is disposable before running `php artisan test`. Format with `vendor/bin/pint`, verify with `vendor/bin/pint --test`, and build assets with `npm run build`.
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+## Project documentation
 
-## Agentic Development
+- [Setup and operations](docs/setup.md)
+- [Implemented requirements and exclusions](docs/requirements.md)
+- [Business rules](docs/business-rules.md)
+- [Architecture](docs/architecture.md)
+- [Database schema](docs/erd.md)
+- [Demo and defense flow](docs/demo.md)
+- [Requirement traceability](docs/traceability.md)
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
-```
-
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+V1 intentionally retains a legacy `province → district → ward` location model. It is not represented as current official Vietnamese administrative geography; see the setup and demo documentation before using location data.

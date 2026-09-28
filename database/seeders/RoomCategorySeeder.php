@@ -9,19 +9,23 @@ class RoomCategorySeeder extends Seeder
 {
     public function run(): void
     {
-        $now = now();
-
-        foreach (['Phòng trọ', 'Căn hộ mini', 'Chung cư', 'Studio', 'Nhà nguyên căn', 'Ở ghép'] as $name) {
-            if (DB::table('room_categories')->where('name', $name)->exists()) {
-                continue;
+        DB::transaction(function (): void {
+            // Categories have no stable seed key. Initialize only an empty catalog
+            // so a rerun cannot recreate a renamed or hidden Admin-managed row.
+            if (DB::table('room_categories')->exists()) {
+                return;
             }
 
-            DB::table('room_categories')->insert([
-                'name' => $name,
-                'is_active' => true,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ]);
-        }
+            $now = now();
+
+            foreach (['Phòng trọ', 'Căn hộ mini', 'Chung cư', 'Studio', 'Nhà nguyên căn', 'Ở ghép'] as $name) {
+                DB::table('room_categories')->insert([
+                    'name' => $name,
+                    'is_active' => true,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]);
+            }
+        });
     }
 }
