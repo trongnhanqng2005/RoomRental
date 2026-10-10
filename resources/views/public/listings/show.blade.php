@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('ui.public_listings.detail_title', ['title' => $listing->title]))
+@section('title', __('ui.public_listings.detail_title', ['title' => strip_tags($listing->title)]))
 
 @section('content')
     @php
@@ -21,7 +21,7 @@
 
             <header class="mt-4 border-b border-line pb-6">
                 <p class="mb-2 text-sm font-bold text-brand-700">{{ $listing->category->name }}</p>
-                <h1 class="break-words text-3xl font-bold tracking-[-0.04em] text-slate-950 sm:text-4xl">{{ $listing->title }}</h1>
+                <h1 class="break-words text-3xl font-bold tracking-[-0.04em] text-slate-950 sm:text-4xl rich-content">{!! \App\Support\HtmlSanitizer::clean($listing->title) !!}</h1>
                 <p class="mt-3 flex items-start gap-2 text-sm leading-6 text-slate-600 sm:text-base">
                     <i class="mt-1 size-5 shrink-0 text-brand-700" data-lucide="map-pin"></i>
                     <span>{{ $address }}</span>
@@ -49,7 +49,7 @@
                         <h2 class="sr-only" id="gallery-heading">{{ __('ui.public_listings.gallery') }}</h2>
                         @if ($coverImage)
                             <figure class="overflow-hidden rounded-control border border-line bg-slate-100">
-                                <img class="aspect-[16/10] w-full object-cover" src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($coverImage->image_url) }}" alt="{{ __('ui.public_listings.cover_image_alt', ['title' => $listing->title]) }}" width="1200" height="750">
+                                <img class="aspect-[16/10] w-full object-cover" src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($coverImage->image_url) }}" alt="{{ __('ui.public_listings.cover_image_alt', ['title' => strip_tags($listing->title)]) }}" width="1200" height="750">
                                 <figcaption class="px-3 py-2 text-xs font-semibold text-slate-600">{{ __('ui.public_listings.cover') }}</figcaption>
                             </figure>
                         @else
@@ -59,7 +59,7 @@
                             <div class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
                                 @foreach ($galleryImages as $image)
                                     <figure class="overflow-hidden rounded-control border border-line bg-slate-100">
-                                        <img class="aspect-[4/3] w-full object-cover" src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($image->image_url) }}" alt="{{ __('ui.public_listings.image_alt', ['title' => $listing->title, 'number' => $loop->iteration + 1]) }}" width="480" height="360" loading="lazy">
+                                        <img class="aspect-[4/3] w-full object-cover" src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($image->image_url) }}" alt="{{ __('ui.public_listings.image_alt', ['title' => strip_tags($listing->title), 'number' => $loop->iteration + 1]) }}" width="480" height="360" loading="lazy">
                                         <figcaption class="px-2 py-1.5 text-xs font-semibold text-slate-600">{{ __('ui.public_listings.image_number', ['number' => $loop->iteration + 1]) }}</figcaption>
                                     </figure>
                                 @endforeach
@@ -78,7 +78,7 @@
 
                         <div class="mt-5 border-t border-line pt-5">
                             <h3 class="text-sm font-bold text-slate-800">{{ __('ui.listings.description') }}</h3>
-                            <p class="mt-2 whitespace-pre-line break-words text-sm leading-7 text-slate-700">{{ $listing->description }}</p>
+                            <div class="mt-2 text-sm leading-7 text-slate-700 rich-content">{!! \App\Support\HtmlSanitizer::clean($listing->description) !!}</div>
                         </div>
 
                         <dl class="mt-5 grid gap-4 border-t border-line pt-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -225,6 +225,11 @@
 
                         @if ($bookableViewingSlots->isEmpty())
                             <p class="mt-4 rounded-control border border-line bg-slate-50 p-3 text-sm text-slate-600">{{ __('ui.appointments.no_available_slots') }}</p>
+                            @if (auth()->check() && (int) $listing->landlord_id === (int) auth()->id())
+                                <a href="{{ route('landlord.viewing-slots.index', $listing) }}" class="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-control bg-brand-50 border border-brand-200 px-3 py-2 text-xs font-bold text-brand-700 transition hover:bg-brand-100">
+                                    <i class="size-4" data-lucide="plus"></i> Tạo thêm lịch xem phòng
+                                </a>
+                            @endif
                         @else
                             <ul class="mt-4 space-y-3">
                                 @foreach ($bookableViewingSlots as $slot)
@@ -245,6 +250,13 @@
                                                 <i class="size-4" data-lucide="log-in"></i>
                                                 {{ __('ui.appointments.login_to_book') }}
                                             </a>
+                                        @elseif (auth()->check() && (int) $listing->landlord_id === (int) auth()->id())
+                                            <div class="mt-3 rounded-control bg-slate-50 p-2 text-center">
+                                                <p class="text-xs font-semibold text-slate-500">Tin đăng của bạn</p>
+                                                <a href="{{ route('landlord.viewing-slots.index', $listing) }}" class="mt-1 inline-flex items-center gap-1 text-xs font-bold text-brand-700 hover:underline">
+                                                    <i class="size-3" data-lucide="pencil"></i> Quản lý lịch xem
+                                                </a>
+                                            </div>
                                         @endif
                                     </li>
                                 @endforeach

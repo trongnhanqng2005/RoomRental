@@ -15,6 +15,7 @@ return [
         'admin_users' => 'User management',
         'admin_categories' => 'Room categories',
         'admin_amenities' => 'Amenities',
+        'admin_site_management' => 'Site management',
         'admin_dashboard' => 'Admin dashboard',
         'landlord_dashboard' => 'Landlord dashboard',
         'notifications' => 'Notifications',

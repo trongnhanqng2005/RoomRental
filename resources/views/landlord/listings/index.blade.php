@@ -122,7 +122,7 @@
                                                     <span class="grid size-16 shrink-0 place-items-center rounded-control bg-slate-100 text-slate-400"><i class="size-6" data-lucide="image"></i></span>
                                                 @endif
                                                 <div class="min-w-0">
-                                                    <p class="font-bold text-slate-950">{{ $listing->title }}</p>
+                                                    <p class="font-bold text-slate-950">{!! \App\Support\HtmlSanitizer::clean($listing->title) !!}</p>
                                                     <p class="mt-1 text-xs font-semibold text-brand-700">{{ $listing->category->name }}</p>
                                                     <p class="mt-2 max-w-sm truncate text-xs text-slate-500">{{ $listing->street_address }}, {{ $listing->ward->name }}, {{ $listing->ward->district->name }}</p>
                                                     @if ($listing->effective_expires_at)
@@ -141,33 +141,41 @@
                                         <td class="px-5 py-5"><x-ui.status-badge axis="visibility" :value="$listing->visibility_status" /></td>
                                         <td class="px-5 py-5">
                                             <div class="flex min-w-40 flex-col items-stretch gap-2">
-                                                <a class="inline-flex min-h-10 items-center justify-center gap-2 rounded-control border border-slate-300 px-3 text-xs font-bold text-slate-700 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800" href="{{ route('landlord.listings.edit', $listing) }}"><i class="size-4" data-lucide="pencil"></i>{{ __('ui.listings.edit') }}</a>
-                                                <a class="inline-flex min-h-10 items-center justify-center gap-2 rounded-control border border-slate-300 px-3 text-xs font-bold text-slate-700 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800" href="{{ route('landlord.viewing-slots.index', $listing) }}"><i class="size-4" data-lucide="calendar-days"></i>{{ __('ui.appointments.manage_slots') }}</a>
+                                                <a class="inline-flex min-h-10 items-center justify-center gap-2 rounded-control border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 shadow-sm transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800" href="{{ route('landlord.listings.edit', $listing) }}"><i class="size-4 text-slate-500" data-lucide="pencil"></i>{{ __('ui.listings.edit') }}</a>
+                                                <a class="inline-flex min-h-10 items-center justify-center gap-2 rounded-control border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 shadow-sm transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800" href="{{ route('landlord.viewing-slots.index', $listing) }}"><i class="size-4 text-slate-500" data-lucide="calendar-days"></i>{{ __('ui.appointments.manage_slots') }}</a>
                                                 @if ($listing->can_renew)
                                                     <form method="POST" action="{{ route('landlord.listings.renew', $listing) }}">
                                                         @csrf
-                                                        <button class="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-control bg-brand-600 px-3 text-xs font-bold text-white hover:bg-brand-700" type="submit"><i class="size-4" data-lucide="calendar-plus-2" aria-hidden="true"></i>{{ __('ui.listings.renew') }}</button>
+                                                        <button class="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-control border border-brand-600 bg-brand-600 px-3 text-xs font-bold text-white shadow-sm transition hover:bg-brand-700" type="submit"><i class="size-4" data-lucide="calendar-plus-2" aria-hidden="true"></i>{{ __('ui.listings.renew') }}</button>
                                                     </form>
                                                 @endif
-                                                <form method="POST" action="{{ route('landlord.listings.destroy', $listing) }}" onsubmit="return confirm(@js(__('ui.listings.delete_confirmation', ['title' => $listing->title])))">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button class="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-control px-3 text-xs font-bold text-danger-700 hover:bg-danger-50" type="submit"><i class="size-4" data-lucide="trash-2" aria-hidden="true"></i>{{ __('ui.listings.delete') }}</button>
-                                                </form>
                                                 <form method="POST" action="{{ route('landlord.listings.occupancy', $listing) }}">
                                                     @csrf
                                                     @method('PATCH')
                                                     <input type="hidden" name="occupancy_status" value="{{ $listing->occupancy_status === 'AVAILABLE' ? 'RENTED' : 'AVAILABLE' }}">
-                                                    <button class="inline-flex min-h-10 w-full items-center justify-center rounded-control px-3 text-xs font-bold text-slate-600 hover:bg-slate-100" type="submit">{{ $listing->occupancy_status === 'AVAILABLE' ? __('ui.listings.change_to_rented') : __('ui.listings.change_to_available') }}</button>
+                                                    <button class="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-control border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 shadow-sm transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800" type="submit">
+                                                        <i class="size-4 text-slate-500" data-lucide="door-open" aria-hidden="true"></i>
+                                                        {{ $listing->occupancy_status === 'AVAILABLE' ? __('ui.listings.change_to_rented') : __('ui.listings.change_to_available') }}
+                                                    </button>
                                                 </form>
                                                 @if ($listing->visibility_status !== 'SUSPENDED')
                                                     <form method="POST" action="{{ route('landlord.listings.visibility', $listing) }}">
                                                         @csrf
                                                         @method('PATCH')
                                                         <input type="hidden" name="visibility_status" value="{{ $listing->visibility_status === 'VISIBLE' ? 'HIDDEN' : 'VISIBLE' }}">
-                                                        <button class="inline-flex min-h-10 w-full items-center justify-center rounded-control px-3 text-xs font-bold text-slate-600 hover:bg-slate-100" type="submit">{{ $listing->visibility_status === 'VISIBLE' ? __('ui.listings.change_to_hidden') : __('ui.listings.change_to_visible') }}</button>
+                                                        <button class="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-control border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 shadow-sm transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800" type="submit">
+                                                            <i class="size-4 text-slate-500" data-lucide="{{ $listing->visibility_status === 'VISIBLE' ? 'eye-off' : 'eye' }}" aria-hidden="true"></i>
+                                                            {{ $listing->visibility_status === 'VISIBLE' ? __('ui.listings.change_to_hidden') : __('ui.listings.change_to_visible') }}
+                                                        </button>
                                                     </form>
                                                 @endif
+                                                <form method="POST" action="{{ route('landlord.listings.destroy', $listing) }}" onsubmit="return confirm(@js(__('ui.listings.delete_confirmation', ['title' => strip_tags($listing->title)])))">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button class="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-control border border-danger-200 bg-white px-3 text-xs font-bold text-danger-700 shadow-sm transition hover:border-danger-300 hover:bg-danger-50 hover:text-danger-800" type="submit">
+                                                        <i class="size-4" data-lucide="trash-2" aria-hidden="true"></i>{{ __('ui.listings.delete') }}
+                                                    </button>
+                                                </form>
                                             </div>
                                         </td>
                                     </tr>
@@ -187,7 +195,7 @@
                                     <span class="grid size-20 shrink-0 place-items-center rounded-control bg-slate-100 text-slate-400"><i class="size-6" data-lucide="image"></i></span>
                                 @endif
                                 <div class="min-w-0 flex-1">
-                                    <h2 class="break-words text-base font-bold text-slate-950">{{ $listing->title }}</h2>
+                                    <h2 class="break-words text-base font-bold text-slate-950">{!! \App\Support\HtmlSanitizer::clean($listing->title) !!}</h2>
                                     <p class="mt-1 text-xs font-semibold text-brand-700">{{ $listing->category->name }}</p>
                                     <p class="mt-2 text-xs leading-5 text-slate-500">{{ $listing->street_address }}, {{ $listing->ward->name }}</p>
                                     @if ($listing->effective_expires_at)
@@ -206,35 +214,43 @@
                                 <div><p class="mb-1 text-[0.65rem] font-bold uppercase tracking-wider text-slate-500">{{ __('ui.listings.visibility_short') }}</p><x-ui.status-badge axis="visibility" :value="$listing->visibility_status" /></div>
                             </div>
                             <div class="mt-4 flex flex-wrap gap-2 border-t border-line pt-4">
-                                <a class="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-control border border-slate-300 px-3 text-xs font-bold text-slate-700 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800" href="{{ route('landlord.listings.edit', $listing) }}"><i class="size-4" data-lucide="pencil"></i>{{ __('ui.listings.edit') }}</a>
-                                <a class="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-control border border-slate-300 px-3 text-xs font-bold text-slate-700 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800" href="{{ route('landlord.viewing-slots.index', $listing) }}"><i class="size-4" data-lucide="calendar-days"></i>{{ __('ui.appointments.manage_slots') }}</a>
+                                <a class="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-control border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 shadow-sm transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800" href="{{ route('landlord.listings.edit', $listing) }}"><i class="size-4 text-slate-500" data-lucide="pencil"></i>{{ __('ui.listings.edit') }}</a>
+                                <a class="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-control border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 shadow-sm transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800" href="{{ route('landlord.viewing-slots.index', $listing) }}"><i class="size-4 text-slate-500" data-lucide="calendar-days"></i>{{ __('ui.appointments.manage_slots') }}</a>
                             </div>
                             <div class="mt-2 grid gap-2 sm:grid-cols-2">
                                 @if ($listing->can_renew)
                                     <form method="POST" action="{{ route('landlord.listings.renew', $listing) }}">
                                         @csrf
-                                        <button class="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-control bg-brand-600 px-3 text-xs font-bold text-white hover:bg-brand-700" type="submit"><i class="size-4" data-lucide="calendar-plus-2" aria-hidden="true"></i>{{ __('ui.listings.renew') }}</button>
+                                        <button class="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-control border border-brand-600 bg-brand-600 px-3 text-xs font-bold text-white shadow-sm transition hover:bg-brand-700" type="submit"><i class="size-4" data-lucide="calendar-plus-2" aria-hidden="true"></i>{{ __('ui.listings.renew') }}</button>
                                     </form>
                                 @endif
-                                <form method="POST" action="{{ route('landlord.listings.destroy', $listing) }}" onsubmit="return confirm(@js(__('ui.listings.delete_confirmation', ['title' => $listing->title])))">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-control px-3 text-xs font-bold text-danger-700 hover:bg-danger-50" type="submit"><i class="size-4" data-lucide="trash-2" aria-hidden="true"></i>{{ __('ui.listings.delete') }}</button>
-                                </form>
                                 <form method="POST" action="{{ route('landlord.listings.occupancy', $listing) }}">
                                     @csrf
                                     @method('PATCH')
                                     <input type="hidden" name="occupancy_status" value="{{ $listing->occupancy_status === 'AVAILABLE' ? 'RENTED' : 'AVAILABLE' }}">
-                                    <button class="inline-flex min-h-10 w-full items-center justify-center rounded-control px-3 text-xs font-bold text-slate-600 hover:bg-slate-100" type="submit">{{ $listing->occupancy_status === 'AVAILABLE' ? __('ui.listings.change_to_rented') : __('ui.listings.change_to_available') }}</button>
+                                    <button class="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-control border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 shadow-sm transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800" type="submit">
+                                        <i class="size-4 text-slate-500" data-lucide="door-open" aria-hidden="true"></i>
+                                        {{ $listing->occupancy_status === 'AVAILABLE' ? __('ui.listings.change_to_rented') : __('ui.listings.change_to_available') }}
+                                    </button>
                                 </form>
                                 @if ($listing->visibility_status !== 'SUSPENDED')
                                     <form method="POST" action="{{ route('landlord.listings.visibility', $listing) }}">
                                         @csrf
                                         @method('PATCH')
                                         <input type="hidden" name="visibility_status" value="{{ $listing->visibility_status === 'VISIBLE' ? 'HIDDEN' : 'VISIBLE' }}">
-                                        <button class="inline-flex min-h-10 w-full items-center justify-center rounded-control px-3 text-xs font-bold text-slate-600 hover:bg-slate-100" type="submit">{{ $listing->visibility_status === 'VISIBLE' ? __('ui.listings.change_to_hidden') : __('ui.listings.change_to_visible') }}</button>
+                                        <button class="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-control border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 shadow-sm transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800" type="submit">
+                                            <i class="size-4 text-slate-500" data-lucide="{{ $listing->visibility_status === 'VISIBLE' ? 'eye-off' : 'eye' }}" aria-hidden="true"></i>
+                                            {{ $listing->visibility_status === 'VISIBLE' ? __('ui.listings.change_to_hidden') : __('ui.listings.change_to_visible') }}
+                                        </button>
                                     </form>
                                 @endif
+                                <form method="POST" action="{{ route('landlord.listings.destroy', $listing) }}" onsubmit="return confirm(@js(__('ui.listings.delete_confirmation', ['title' => strip_tags($listing->title)])))">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-control border border-danger-200 bg-white px-3 text-xs font-bold text-danger-700 shadow-sm transition hover:border-danger-300 hover:bg-danger-50 hover:text-danger-800" type="submit">
+                                        <i class="size-4" data-lucide="trash-2" aria-hidden="true"></i>{{ __('ui.listings.delete') }}
+                                    </button>
+                                </form>
                             </div>
                         </article>
                     @endforeach

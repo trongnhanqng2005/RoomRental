@@ -23,7 +23,7 @@
             <header class="mt-4 flex flex-col gap-4 border-b border-line pb-6 sm:flex-row sm:items-end sm:justify-between">
                 <div class="min-w-0">
                     <p class="mb-2 text-sm font-bold text-brand-700">{{ __('ui.admin_moderation.eyebrow') }} · {{ __('ui.admin_moderation.version') }} {{ $moderation->version_no }}</p>
-                    <h1 class="break-words text-3xl font-bold tracking-[-0.04em] text-slate-950">{{ $listing->title }}</h1>
+                    <h1 class="break-words text-3xl font-bold tracking-[-0.04em] text-slate-950 rich-content">{!! \App\Support\HtmlSanitizer::clean($listing->title) !!}</h1>
                     <p class="mt-2 text-sm leading-6 text-slate-600">{{ $address }}</p>
                 </div>
                 <div class="flex flex-wrap gap-2" aria-label="{{ __('ui.admin_moderation.detail_heading') }}">
@@ -53,7 +53,7 @@
 
                         <div class="mt-5 border-t border-line pt-5">
                             <h3 class="text-sm font-bold text-slate-800">{{ __('ui.listings.description') }}</h3>
-                            <p class="mt-2 whitespace-pre-line text-sm leading-7 text-slate-700">{{ $listing->description }}</p>
+                            <div class="mt-2 text-sm leading-7 text-slate-700 rich-content">{!! \App\Support\HtmlSanitizer::clean($listing->description) !!}</div>
                         </div>
 
                         <dl class="mt-5 grid gap-4 border-t border-line pt-5 sm:grid-cols-2 lg:grid-cols-3">

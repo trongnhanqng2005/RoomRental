@@ -10,7 +10,7 @@ return [
     'in' => 'The selected :attribute is invalid.',
     'integer' => 'The :attribute must be an integer.',
     'max' => ['string' => 'The :attribute may not be greater than :max characters.', 'numeric' => 'The :attribute may not be greater than :max.', 'array' => 'The :attribute may not have more than :max items.', 'file' => 'The :attribute may not be larger than :max kilobytes.'],
-    'min' => ['numeric' => 'The :attribute must be at least :min.', 'array' => 'The :attribute must have at least :min items.'],
+    'min' => ['string' => 'The :attribute must be at least :min characters.', 'numeric' => 'The :attribute must be at least :min.', 'array' => 'The :attribute must have at least :min items.'],
     'mimes' => 'The :attribute must be a file of type: :values.',
     'numeric' => 'The :attribute must be a number.',
     'required' => 'The :attribute field is required.',

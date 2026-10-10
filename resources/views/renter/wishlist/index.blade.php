@@ -26,32 +26,32 @@
             @else
                 <div class="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                     @foreach ($favorites as $listing)
-                        <article class="spatial-card min-w-0 overflow-hidden">
+                        <article class="spatial-card interactive-lift flex h-full flex-col min-w-0 overflow-hidden">
                             @if ($listing->is_publicly_eligible)
-                                <a class="block overflow-hidden bg-slate-100 focus-visible:outline-offset-[-4px]" href="{{ route('public.listings.show', $listing) }}" aria-label="{{ __('ui.public_listings.open_listing', ['title' => $listing->title]) }}">
+                                <a class="block overflow-hidden bg-slate-100 focus-visible:outline-offset-[-4px]" href="{{ route('public.listings.show', $listing) }}" aria-label="{{ __('ui.public_listings.open_listing', ['title' => strip_tags($listing->title)]) }}">
                                     @if ($listing->coverImage)
-                                        <img class="aspect-[4/3] w-full object-cover" src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($listing->coverImage->image_url) }}" alt="{{ __('ui.public_listings.cover_image_alt', ['title' => $listing->title]) }}" width="640" height="480" loading="lazy">
+                                        <img class="aspect-[4/3] w-full object-cover" src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($listing->coverImage->image_url) }}" alt="{{ __('ui.public_listings.cover_image_alt', ['title' => strip_tags($listing->title)]) }}" width="640" height="480" loading="lazy">
                                     @else
                                         <span class="grid aspect-[4/3] w-full place-items-center text-slate-400" role="img" aria-label="{{ __('ui.public_listings.no_cover') }}"><i class="size-10" data-lucide="image"></i></span>
                                     @endif
                                 </a>
-                                <div class="p-4 sm:p-5">
+                                <div class="flex flex-1 flex-col p-4 sm:p-5">
                                     <div class="flex flex-wrap items-start justify-between gap-2">
                                         <p class="text-xs font-bold text-brand-700">{{ $listing->category->name }}</p>
                                         <span class="rounded-full bg-success-50 px-2.5 py-1 text-xs font-bold text-success-700">{{ __('ui.favorites.available') }}</span>
                                     </div>
-                                    <h2 class="mt-2 break-words text-lg font-bold leading-6 text-slate-950">
-                                        <a class="rounded-sm hover:text-brand-800" href="{{ route('public.listings.show', $listing) }}">{{ $listing->title }}</a>
+                                    <h2 class="mt-2 line-clamp-2 min-h-[3rem] text-lg font-bold leading-6 text-slate-950">
+                                        <a class="rounded-sm hover:text-brand-800" href="{{ route('public.listings.show', $listing) }}" title="{{ strip_tags($listing->title) }}">{!! \App\Support\HtmlSanitizer::clean($listing->title) !!}</a>
                                     </h2>
-                                    <p class="mt-2 flex items-start gap-2 text-sm leading-6 text-slate-600">
-                                        <i class="mt-1 size-4 shrink-0 text-brand-700" data-lucide="map-pin"></i>
-                                        <span>{{ $listing->ward->district->province->name }} · {{ $listing->ward->district->name }} · {{ $listing->ward->name }}</span>
+                                    <p class="mt-2 flex items-center gap-2 text-sm leading-6 text-slate-600 min-h-[1.5rem]">
+                                        <i class="size-4 shrink-0 text-brand-700" data-lucide="map-pin"></i>
+                                        <span class="truncate">{{ $listing->ward->district->province->name }} · {{ $listing->ward->district->name }} · {{ $listing->ward->name }}</span>
                                     </p>
-                                    <p class="mt-4 text-lg font-bold text-slate-950">{{ number_format((float) $listing->monthly_rent, 0, ',', '.') }} ₫ <span class="text-xs font-semibold text-slate-500">/ {{ __('ui.listings.monthly_rent') }}</span></p>
+                                    <p class="mt-3 text-lg font-bold text-slate-950">{{ number_format((float) $listing->monthly_rent, 0, ',', '.') }} ₫ <span class="text-xs font-semibold text-slate-500">/ {{ __('ui.listings.monthly_rent') }}</span></p>
                                     <p class="mt-1 text-sm font-medium text-slate-600">{{ number_format((float) $listing->area_m2, 2, ',', '.') }} m²</p>
                                 </div>
                             @else
-                                <div class="grid aspect-[4/3] place-items-center bg-slate-50 px-6 text-center" role="status">
+                                <div class="flex flex-1 flex-col items-center justify-center bg-slate-50 p-6 text-center" role="status">
                                     <div>
                                         <span class="mx-auto grid size-12 place-items-center rounded-full bg-warning-50 text-warning-700"><i class="size-6" data-lucide="circle-alert"></i></span>
                                         <p class="mt-3 font-bold text-slate-900">{{ __('ui.favorites.unavailable') }}</p>
@@ -60,7 +60,7 @@
                                 </div>
                             @endif
 
-                            <div class="border-t border-line p-4 sm:p-5">
+                            <div class="mt-auto border-t border-line p-4 sm:p-5">
                                 <form method="POST" action="{{ route('favorites.destroy', $listing) }}">
                                     @csrf
                                     @method('DELETE')

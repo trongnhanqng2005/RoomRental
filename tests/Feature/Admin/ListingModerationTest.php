@@ -124,6 +124,32 @@ class ListingModerationTest extends TestCase
             ->assertViewHas('listings', fn ($listings): bool => $listings->count() === 10 && $listings->total() === 11);
     }
 
+    public function test_moderation_queue_defaults_to_oldest_first_and_supports_newest_sort(): void
+    {
+        $admin = $this->userWithRole('ADMIN');
+        $landlord = $this->userWithRole('LANDLORD');
+
+        $first = $this->createListing($landlord, 'Tin gửi trước');
+        $first->currentModeration->update(['submitted_at' => now()->subDays(5)]);
+
+        $second = $this->createListing($landlord, 'Tin gửi sau');
+        $second->currentModeration->update(['submitted_at' => now()->subDay()]);
+
+        // Default: oldest first
+        $responseOldest = $this->actingAs($admin)->get(route('admin.listing-moderations.index'));
+        $responseOldest->assertOk();
+        $oldestListings = $responseOldest->viewData('listings')->items();
+        $this->assertSame($first->id, $oldestListings[0]->id);
+        $this->assertSame($second->id, $oldestListings[1]->id);
+
+        // Sort newest first
+        $responseNewest = $this->actingAs($admin)->get(route('admin.listing-moderations.index', ['sort' => 'newest']));
+        $responseNewest->assertOk();
+        $newestListings = $responseNewest->viewData('listings')->items();
+        $this->assertSame($second->id, $newestListings[0]->id);
+        $this->assertSame($first->id, $newestListings[1]->id);
+    }
+
     public function test_admin_can_view_listing_content_landlord_status_axes_images_fees_and_moderation_history(): void
     {
         $landlord = $this->userWithRole('LANDLORD');
@@ -185,7 +211,7 @@ class ListingModerationTest extends TestCase
         $this->assertNull($current->rejection_reason);
         $this->assertSame($current->id, $listing->current_moderation_id);
         $this->assertSame('RENTED', $listing->occupancy_status);
-        $this->assertSame('HIDDEN', $listing->visibility_status);
+        $this->assertSame('VISIBLE', $listing->visibility_status);
         $this->assertSame($submittedAt->toDateTimeString(), $current->submitted_at->toDateTimeString());
         $this->assertSame(2, $listing->moderations()->count());
         $this->assertDatabaseHas('listing_moderations', ['id' => $priorVersion, 'status' => 'PENDING']);

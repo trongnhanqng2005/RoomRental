@@ -17,7 +17,11 @@ class UserManagementController extends Controller
         $filters = $request->validated();
         $users = $service->paginate($filters);
 
-        return view('admin.users.index', compact('users', 'filters'));
+        return view('admin.site-management.index', [
+            'activeTab' => 'users',
+            'users' => $users,
+            'filters' => $filters,
+        ]);
     }
 
     public function show(User $user, UserAdministrationService $service): Response

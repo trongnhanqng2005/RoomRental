@@ -15,6 +15,7 @@ return [
         'admin_users' => 'Quản lý người dùng',
         'admin_categories' => 'Danh mục phòng',
         'admin_amenities' => 'Tiện nghi',
+        'admin_site_management' => 'Quản lý trang',
         'admin_dashboard' => 'Tổng quan quản trị',
         'landlord_dashboard' => 'Tổng quan chủ trọ',
         'notifications' => 'Thông báo',

@@ -14,7 +14,7 @@
                 <p class="mb-2 text-sm font-bold text-brand-700">{{ __('ui.layout.landlord_listings') }}</p>
                 <h1 class="break-words text-3xl font-bold tracking-[-0.04em] text-slate-950 sm:text-4xl">{{ __('ui.appointments.manage_heading') }}</h1>
                 <p class="mt-3 text-sm leading-7 text-slate-600 sm:text-base">{{ __('ui.appointments.manage_description') }}</p>
-                <p class="mt-4 break-words text-lg font-bold text-slate-900">{{ $listing->title }}</p>
+                <div class="mt-4 break-words text-lg font-bold text-slate-900 rich-content">{!! \App\Support\HtmlSanitizer::clean($listing->title) !!}</div>
             </header>
 
             @if (session('status'))

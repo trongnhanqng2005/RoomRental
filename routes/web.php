@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\ListingModerationController;
 use App\Http\Controllers\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Admin\RoomCategoryController;
+use App\Http\Controllers\Admin\SiteManagementController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
@@ -97,6 +98,7 @@ Route::middleware(['auth', 'role:ADMIN,SUPER_ADMIN'])
         Route::get('/reports/{report}', [AdminReportController::class, 'show'])->whereNumber('report')->name('reports.show');
         Route::post('/reports/{report}/dismiss', [AdminReportController::class, 'dismiss'])->whereNumber('report')->name('reports.dismiss');
         Route::post('/reports/{report}/resolve', [AdminReportController::class, 'resolve'])->whereNumber('report')->name('reports.resolve');
+        Route::get('/site-management', [SiteManagementController::class, 'index'])->name('site-management.index');
         Route::get('/categories', [RoomCategoryController::class, 'index'])->name('categories.index');
         Route::post('/categories', [RoomCategoryController::class, 'store'])->name('categories.store');
         Route::get('/categories/{category}/edit', [RoomCategoryController::class, 'edit'])->whereNumber('category')->name('categories.edit');

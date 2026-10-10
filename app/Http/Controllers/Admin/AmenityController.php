@@ -20,7 +20,10 @@ class AmenityController extends Controller
             ->orderBy('id')
             ->get();
 
-        return view('admin.amenities.index', compact('amenities'));
+        return view('admin.site-management.index', [
+            'activeTab' => 'amenities',
+            'amenities' => $amenities,
+        ]);
     }
 
     public function store(StoreAmenityRequest $request, CatalogAdministrationService $service): RedirectResponse

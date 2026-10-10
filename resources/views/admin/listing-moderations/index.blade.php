@@ -25,7 +25,30 @@
                     <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">{{ __('ui.admin_moderation.empty_description') }}</p>
                 </div>
             @else
-                <div class="mt-7 hidden overflow-hidden rounded-panel border border-line bg-white shadow-card lg:block">
+                <div class="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <p class="text-sm font-semibold text-slate-600">
+                        Tổng cộng <strong class="font-bold text-slate-950">{{ $listings->total() }}</strong> tin chờ kiểm duyệt
+                    </p>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold uppercase tracking-wide text-slate-500">Sắp xếp:</span>
+                        <div class="inline-flex rounded-control border border-line bg-white p-1 shadow-sm text-xs font-semibold">
+                            <a href="{{ request()->fullUrlWithQuery(['sort' => 'oldest', 'page' => 1]) }}"
+                               class="inline-flex items-center gap-1.5 rounded-control px-3 py-1.5 transition {{ $sort === 'oldest' ? 'bg-brand-50 font-bold text-brand-700 shadow-sm' : 'text-slate-600 hover:text-slate-900' }}"
+                               title="Gửi sớm nhất lên đầu">
+                                <i class="size-3.5" data-lucide="chevron-up"></i>
+                                Gửi sớm nhất trước
+                            </a>
+                            <a href="{{ request()->fullUrlWithQuery(['sort' => 'newest', 'page' => 1]) }}"
+                               class="inline-flex items-center gap-1.5 rounded-control px-3 py-1.5 transition {{ $sort === 'newest' ? 'bg-brand-50 font-bold text-brand-700 shadow-sm' : 'text-slate-600 hover:text-slate-900' }}"
+                               title="Gửi mới nhất lên đầu">
+                                <i class="size-3.5" data-lucide="chevron-down"></i>
+                                Gửi mới nhất trước
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 hidden overflow-hidden rounded-panel border border-line bg-white shadow-card lg:block">
                     <div class="overflow-x-auto">
                         <table class="w-full min-w-[72rem] text-left text-sm">
                             <caption class="sr-only">{{ __('ui.admin_moderation.queue') }}</caption>
@@ -35,7 +58,20 @@
                                     <th class="px-5 py-4" scope="col">{{ __('ui.admin_moderation.landlord') }}</th>
                                     <th class="px-5 py-4" scope="col">{{ __('ui.admin_moderation.location') }}</th>
                                     <th class="px-5 py-4" scope="col">{{ __('ui.listings.monthly_rent') }}</th>
-                                    <th class="px-5 py-4" scope="col">{{ __('ui.admin_moderation.submitted_at') }}</th>
+                                    <th class="px-5 py-4" scope="col">
+                                        <a class="group inline-flex items-center gap-1.5 font-bold uppercase tracking-[0.1em] text-slate-700 transition hover:text-brand-700"
+                                           href="{{ request()->fullUrlWithQuery(['sort' => $sort === 'oldest' ? 'newest' : 'oldest', 'page' => 1]) }}"
+                                           title="{{ $sort === 'oldest' ? 'Đang sắp xếp: Gửi sớm nhất trước. Bấm để đổi sang Gửi mới nhất trước' : 'Đang sắp xếp: Gửi mới nhất trước. Bấm để đổi sang Gửi sớm nhất trước' }}">
+                                            <span>{{ __('ui.admin_moderation.submitted_at') }}</span>
+                                            <span class="grid size-5 place-items-center rounded bg-slate-100 text-brand-700 group-hover:bg-brand-100">
+                                                @if ($sort === 'oldest')
+                                                    <i class="size-3.5" data-lucide="chevron-up"></i>
+                                                @else
+                                                    <i class="size-3.5" data-lucide="chevron-down"></i>
+                                                @endif
+                                            </span>
+                                        </a>
+                                    </th>
                                     <th class="px-5 py-4" scope="col">{{ __('ui.admin_moderation.version') }}</th>
                                     <th class="px-5 py-4" scope="col"><span class="sr-only">{{ __('ui.admin_moderation.review') }}</span></th>
                                 </tr>
@@ -44,7 +80,7 @@
                                 @foreach ($listings as $listing)
                                     <tr class="align-top">
                                         <td class="px-5 py-5">
-                                            <p class="font-bold text-slate-950">{{ $listing->title }}</p>
+                                            <div class="font-bold text-slate-950 rich-content">{!! \App\Support\HtmlSanitizer::clean($listing->title) !!}</div>
                                             <p class="mt-1 text-xs font-semibold text-brand-700">{{ $listing->category->name }}</p>
                                         </td>
                                         <td class="px-5 py-5">
@@ -76,7 +112,7 @@
                         <article class="spatial-card p-4 sm:p-5">
                             <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                 <div class="min-w-0">
-                                    <p class="break-words text-base font-bold text-slate-950">{{ $listing->title }}</p>
+                                    <div class="break-words text-base font-bold text-slate-950 rich-content">{!! \App\Support\HtmlSanitizer::clean($listing->title) !!}</div>
                                     <p class="mt-1 text-sm font-semibold text-brand-700">{{ $listing->category->name }}</p>
                                 </div>
                                 <x-ui.status-badge axis="moderation" :value="$listing->currentModeration->status" />

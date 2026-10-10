@@ -27,7 +27,7 @@
                         <article class="spatial-card grid min-w-0 gap-4 p-4 sm:p-5 md:grid-cols-[10rem_minmax(0,1fr)]">
                             <div class="overflow-hidden rounded-control border border-line bg-slate-100">
                                 @if ($listing->coverImage)
-                                    <img class="aspect-[4/3] w-full object-cover md:aspect-square" src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($listing->coverImage->image_url) }}" alt="{{ __('ui.public_listings.cover_image_alt', ['title' => $listing->title]) }}" width="400" height="400" loading="lazy">
+                                    <img class="aspect-[4/3] w-full object-cover md:aspect-square" src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($listing->coverImage->image_url) }}" alt="{{ __('ui.public_listings.cover_image_alt', ['title' => strip_tags($listing->title)]) }}" width="400" height="400" loading="lazy">
                                 @else
                                     <div class="grid aspect-[4/3] place-items-center text-slate-400 md:aspect-square" role="img" aria-label="{{ __('ui.public_listings.no_cover') }}"><i class="size-10" data-lucide="image"></i></div>
                                 @endif
@@ -36,7 +36,7 @@
                                 <div class="flex flex-wrap items-start justify-between gap-3">
                                     <div class="min-w-0">
                                         <p class="text-xs font-bold text-brand-700">{{ __('ui.appointments.listing') }}</p>
-                                        <h2 class="mt-1 break-words text-lg font-bold text-slate-950">{{ $listing->title }}</h2>
+                                        <h2 class="mt-1 break-words text-lg font-bold text-slate-950 rich-content">{!! \App\Support\HtmlSanitizer::clean($listing->title) !!}</h2>
                                     </div>
                                     <span class="rounded-full border border-line bg-slate-50 px-3 py-1 text-xs font-bold text-slate-700" role="status">{{ __('ui.appointments.statuses.'.$appointment->status) }}</span>
                                 </div>

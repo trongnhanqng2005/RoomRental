@@ -30,7 +30,7 @@
             <header class="mt-4 flex flex-col gap-4 border-b border-line pb-6 sm:flex-row sm:items-end sm:justify-between">
                 <div class="min-w-0">
                     <p class="mb-2 text-sm font-bold text-brand-700">{{ __('ui.reports.admin_eyebrow') }} · #{{ $report->id }}</p>
-                    <h1 class="break-words text-3xl font-bold tracking-[-0.04em] text-slate-950">{{ $listing->title }}</h1>
+                    <h1 class="break-words text-3xl font-bold tracking-[-0.04em] text-slate-950 rich-content">{!! \App\Support\HtmlSanitizer::clean($listing->title) !!}</h1>
                     <p class="mt-2 text-sm leading-6 text-slate-600">{{ $address }}</p>
                 </div>
                 <div class="flex flex-wrap gap-2">
@@ -80,7 +80,7 @@
                         </div>
                         <div class="mt-5 border-t border-line pt-5">
                             <h3 class="text-sm font-bold text-slate-800">{{ __('ui.listings.description') }}</h3>
-                            <p class="mt-2 whitespace-pre-line break-words text-sm leading-7 text-slate-700">{{ $listing->description }}</p>
+                            <div class="mt-2 text-sm leading-7 text-slate-700 rich-content">{!! \App\Support\HtmlSanitizer::clean($listing->description) !!}</div>
                         </div>
                         <dl class="mt-5 grid gap-4 border-t border-line pt-5 sm:grid-cols-2 lg:grid-cols-3">
                             @foreach ([
@@ -106,7 +106,7 @@
                         @endif
                         @if ($coverImage)
                             <figure class="mt-5 overflow-hidden rounded-control border border-line bg-slate-100">
-                                <img class="aspect-[16/10] w-full object-cover" src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($coverImage->image_url) }}" alt="{{ __('ui.reports.cover_image_alt', ['title' => $listing->title]) }}" loading="lazy">
+                                <img class="aspect-[16/10] w-full object-cover" src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($coverImage->image_url) }}" alt="{{ __('ui.reports.cover_image_alt', ['title' => strip_tags($listing->title)]) }}" loading="lazy">
                             </figure>
                         @endif
                     </section>
