@@ -36,7 +36,7 @@
                                         <h2 class="break-words font-bold text-slate-950">{{ $notification->title }}</h2>
                                         <span class="rounded-full px-2.5 py-1 text-xs font-bold {{ $notification->read_at ? 'bg-slate-100 text-slate-700' : 'bg-warning-50 text-warning-700' }}">{{ $notification->read_at ? __('ui.notifications.read') : __('ui.notifications.unread') }}</span>
                                     </div>
-                                    <p class="mt-2 break-words text-sm leading-6 text-slate-700">{{ $notification->message }}</p>
+                                    <p class="mt-2 break-words text-sm leading-6 text-slate-700">{!! \App\Support\HtmlSanitizer::inline($notification->message) !!}</p>
                                     <p class="mt-2 text-xs text-slate-500">{{ $notification->created_at->format('d/m/Y H:i') }}</p>
                                     @if ($notification->entity_type === 'listing' && auth()->user()->hasRole('LANDLORD'))
                                         <a class="mt-3 inline-flex min-h-9 items-center gap-2 text-sm font-bold text-brand-700 underline decoration-brand-300 underline-offset-4 hover:text-brand-800" href="{{ route('landlord.listings.index') }}">

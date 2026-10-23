@@ -12,7 +12,7 @@
         <a class="skip-link" href="#main-content">{{ __('ui.layout.skip_to_content') }}</a>
 
         <header class="site-header sticky top-0 z-40">
-            <div class="w-full flex flex-wrap items-center justify-between gap-y-2 px-4 py-2 sm:px-6 lg:flex-nowrap lg:gap-4 lg:px-8 xl:px-12">
+            <div class="w-full flex flex-wrap items-center justify-between gap-y-2 px-4 py-2 sm:px-6 lg:flex-nowrap lg:gap-4 lg:px-8 {{ auth()->guest() ? 'mx-auto max-w-7xl' : 'xl:px-12' }}">
                 <div class="flex items-center shrink-0 w-auto lg:w-48 xl:w-56">
                     <a class="group inline-flex items-center gap-3 rounded-xl text-slate-900 transition hover:opacity-95" href="/" aria-label="{{ __('ui.layout.home_label') }}" title="{{ __('ui.layout.home_label') }}">
                         <span class="brand-glyph transition duration-200 group-hover:scale-105" aria-hidden="true">
@@ -34,7 +34,7 @@
                     <i class="hidden size-5 hs-collapse-open:block" data-lucide="x"></i>
                 </button>
 
-                <div id="site-navigation" class="hs-collapse hidden w-full basis-full overflow-hidden transition-[height] duration-300 lg:flex lg:w-auto lg:basis-auto lg:flex-1 lg:items-center lg:justify-center">
+                <div id="site-navigation" class="hs-collapse hidden w-full basis-full overflow-hidden transition-[height] duration-300 lg:flex lg:w-auto lg:basis-auto lg:flex-1 lg:items-center {{ auth()->guest() ? 'lg:justify-end' : 'lg:justify-center' }}">
                     <nav class="mt-4 flex flex-col gap-1 border-t border-slate-200 pt-4 lg:mt-0 lg:flex-row lg:items-center lg:justify-center lg:gap-1 xl:gap-1.5 lg:border-0 lg:pt-0" aria-label="{{ __('ui.layout.main_navigation') }}">
                         @if (! auth()->check() || ! auth()->user()->must_change_password)
                             <a
@@ -167,7 +167,9 @@
                         @endguest
                     </nav>
                 </div>
-                <div class="hidden lg:block shrink-0 invisible pointer-events-none lg:w-48 xl:w-56" aria-hidden="true"></div>
+                @auth
+                    <div class="hidden lg:block shrink-0 invisible pointer-events-none lg:w-48 xl:w-56" aria-hidden="true"></div>
+                @endauth
             </div>
         </header>
 

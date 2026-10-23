@@ -6,6 +6,14 @@ class HtmlSanitizer
 {
     private const ALLOWED_TAGS = '<p><br><b><strong><i><em><u><s><strike><sub><sup><h1><h2><h3><h4><h5><h6><ul><ol><li><span><div><blockquote><hr><a><font>';
 
+    public static function inline(?string $html): string
+    {
+        // Notifications allow text formatting only, without links, styles or event handlers.
+        $clean = strip_tags(self::clean($html), '<br><b><strong><i><em><u><s><strike><sub><sup>');
+
+        return preg_replace('/<(\/?)([a-z]+)\b[^>]*>/i', '<$1$2>', $clean);
+    }
+
     public static function clean(?string $html): string
     {
         if ($html === null || trim($html) === '') {
