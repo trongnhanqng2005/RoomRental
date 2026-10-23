@@ -20,7 +20,10 @@ class RoomCategoryController extends Controller
             ->orderBy('id')
             ->get();
 
-        return view('admin.categories.index', compact('categories'));
+        return view('admin.site-management.index', [
+            'activeTab' => 'categories',
+            'categories' => $categories,
+        ]);
     }
 
     public function store(StoreRoomCategoryRequest $request, CatalogAdministrationService $service): RedirectResponse

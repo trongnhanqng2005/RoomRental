@@ -9,6 +9,7 @@ use App\Models\ListingModeration;
 use App\Models\Role;
 use App\Models\RoomCategory;
 use App\Models\User;
+use App\Support\HtmlSanitizer;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
@@ -213,8 +214,8 @@ class ListingService
     {
         return [
             'category_id' => (int) $data['category_id'],
-            'title' => $data['title'],
-            'description' => $data['description'],
+            'title' => HtmlSanitizer::clean($data['title']),
+            'description' => HtmlSanitizer::clean($data['description']),
             'monthly_rent' => $this->decimal($data['monthly_rent'], 2),
             'deposit_amount' => $this->decimal($data['deposit_amount'] ?? null, 2),
             'area_m2' => $this->decimal($data['area_m2'], 2),

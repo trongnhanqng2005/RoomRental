@@ -165,7 +165,7 @@ class ListingManagementTest extends TestCase
             ->put(route('landlord.listings.update', $listing), $this->updateData($listing, [
                 'amenity_ids' => [],
                 'amenity_ids_submitted' => '1',
-                'description' => 'Đã bỏ tiện nghi đang ẩn.',
+                'description' => 'Đã bỏ tiện nghi đang ẩn này khỏi phòng trọ cho người thuê.',
             ]))
             ->assertRedirect(route('landlord.listings.index'));
         $this->assertDatabaseMissing('listing_amenities', [

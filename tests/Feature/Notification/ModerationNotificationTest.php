@@ -57,6 +57,28 @@ class ModerationNotificationTest extends TestCase
         $this->assertNull($otherNotification->fresh()->read_at);
     }
 
+    public function test_notification_renders_rich_title_without_executable_html(): void
+    {
+        $owner = $this->userWithRole('LANDLORD', 'owner@example.com');
+        $notification = $this->notification($owner, 'LISTING_APPROVED', 'Đã duyệt', null);
+        $notification->update([
+            'message' => 'Tin đăng “<b onclick="alert(1)"><i>Phòng trọ siêu vip&nbsp;</i></b>” đã được phê duyệt.'
+                .'<script>alert(2)</script><img src=x onerror="alert(3)">'
+                .'<a href="javascript:alert(4)">Chi tiết</a>',
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('notifications.index'))
+            ->assertOk()
+            ->assertSee('<b><i>Phòng trọ siêu vip&nbsp;</i></b>', false)
+            ->assertSee('Chi tiết')
+            ->assertDontSee('&lt;b', false)
+            ->assertDontSee('onclick=', false)
+            ->assertDontSee('onerror=', false)
+            ->assertDontSee('javascript:', false)
+            ->assertDontSee('alert(2)', false);
+    }
+
     private function userWithRole(string $role, string $email): User
     {
         $user = User::factory()->create(['email' => $email]);

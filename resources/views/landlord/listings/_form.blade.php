@@ -61,16 +61,7 @@
         <legend class="text-xl font-bold tracking-[-0.03em] text-slate-950">{{ __('ui.listings.basic_section') }}</legend>
         <p class="text-sm leading-6 text-slate-500">{{ __('ui.listings.basic_description') }}</p>
 
-        <div class="grid gap-5 sm:grid-cols-2">
-            <x-ui.input
-                name="title"
-                :label="__('ui.listings.title')"
-                :value="$currentListing?->title"
-                maxlength="255"
-                icon="type"
-                required
-            />
-
+        <div class="max-w-md">
             <x-ui.select
                 name="category_id"
                 :label="__('ui.listings.category')"
@@ -81,12 +72,28 @@
             />
         </div>
 
-        <x-ui.textarea
+        <x-ui.rich-editor
+            name="title"
+            :label="__('ui.listings.title')"
+            :value="$currentListing?->title"
+            placeholder="Ví dụ: Phòng trọ khép kín full nội thất gần ĐH Bách Khoa"
+            hint="Tối thiểu 10 ký tự. Sử dụng thanh công cụ để định dạng kiểu chữ, cỡ chữ, màu sắc cho tiêu đề nổi bật."
+            height-class="min-h-[4.5rem]"
+            :single-line="true"
+            :min-words="2"
+            :max-words="50"
+            required
+        />
+
+        <x-ui.rich-editor
             name="description"
             :label="__('ui.listings.description')"
             :value="$currentListing?->description"
-            :hint="__('ui.listings.basic_description')"
-            rows="6"
+            placeholder="Mô tả chi tiết về tiện nghi phòng, giờ giấc ra vào, an ninh, điện nước, vị trí xung quanh..."
+            hint="Tối thiểu 30 ký tự. Sử dụng đầy đủ thanh công cụ để định dạng bài viết rõ ràng, đẹp mắt."
+            height-class="min-h-[14rem]"
+            :min-words="10"
+            :max-words="1000"
             required
         />
 
@@ -111,12 +118,82 @@
     <fieldset class="space-y-5">
         <legend class="text-xl font-bold tracking-[-0.03em] text-slate-950">{{ __('ui.listings.room_section') }}</legend>
         <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            <x-ui.input name="monthly_rent" :label="__('ui.listings.monthly_rent')" type="number" :value="$currentListing?->monthly_rent" inputmode="decimal" step="0.01" min="0" required />
-            <x-ui.input name="deposit_amount" :label="__('ui.listings.deposit_amount')" type="number" :value="$currentListing?->deposit_amount" inputmode="decimal" step="0.01" min="0" />
-            <x-ui.input name="area_m2" :label="__('ui.listings.area_m2')" type="number" :value="$currentListing?->area_m2" inputmode="decimal" step="0.01" min="0.01" required />
-            <x-ui.input name="max_occupants" :label="__('ui.listings.max_occupants')" type="number" :value="$currentListing?->max_occupants" inputmode="numeric" min="1" required />
-            <x-ui.input name="bedroom_count" :label="__('ui.listings.bedroom_count')" type="number" :value="$currentListing?->bedroom_count" inputmode="numeric" min="0" required />
-            <x-ui.input name="bathroom_count" :label="__('ui.listings.bathroom_count')" type="number" :value="$currentListing?->bathroom_count" inputmode="numeric" min="0" required />
+            <x-ui.input
+                name="monthly_rent"
+                :label="__('ui.listings.monthly_rent')"
+                type="number"
+                :value="$currentListing?->monthly_rent"
+                inputmode="decimal"
+                step="10000"
+                min="100000"
+                max="100000000"
+                placeholder="Ví dụ: 3000000"
+                hint="Từ 100.000 ₫ đến 100.000.000 ₫ / tháng"
+                data-currency-input
+                required
+            />
+            <x-ui.input
+                name="deposit_amount"
+                :label="__('ui.listings.deposit_amount')"
+                type="number"
+                :value="$currentListing?->deposit_amount"
+                inputmode="decimal"
+                step="10000"
+                min="0"
+                max="300000000"
+                placeholder="Ví dụ: 3000000"
+                hint="Tối đa 300.000.000 ₫ (để trống nếu không cần cọc)"
+                data-currency-input
+            />
+            <x-ui.input
+                name="area_m2"
+                :label="__('ui.listings.area_m2')"
+                type="number"
+                :value="$currentListing?->area_m2"
+                inputmode="decimal"
+                step="0.5"
+                min="5"
+                max="300"
+                placeholder="Ví dụ: 25"
+                hint="Từ 5 m² đến 300 m²"
+                required
+            />
+            <x-ui.input
+                name="max_occupants"
+                :label="__('ui.listings.max_occupants')"
+                type="number"
+                :value="$currentListing?->max_occupants"
+                inputmode="numeric"
+                min="1"
+                max="20"
+                placeholder="Ví dụ: 2"
+                hint="Từ 1 đến 20 người"
+                required
+            />
+            <x-ui.input
+                name="bedroom_count"
+                :label="__('ui.listings.bedroom_count')"
+                type="number"
+                :value="$currentListing?->bedroom_count"
+                inputmode="numeric"
+                min="0"
+                max="10"
+                placeholder="Ví dụ: 1"
+                hint="Từ 0 đến 10 phòng ngủ"
+                required
+            />
+            <x-ui.input
+                name="bathroom_count"
+                :label="__('ui.listings.bathroom_count')"
+                type="number"
+                :value="$currentListing?->bathroom_count"
+                inputmode="numeric"
+                min="0"
+                max="10"
+                placeholder="Ví dụ: 1"
+                hint="Từ 0 đến 10 phòng tắm"
+                required
+            />
         </div>
     </fieldset>
 
@@ -171,7 +248,18 @@
             </div>
         </div>
 
-        <x-ui.input name="street_address" :label="__('ui.listings.street_address')" :value="$currentListing?->street_address" maxlength="500" autocomplete="street-address" icon="map-pinned" required />
+        <x-ui.input
+            name="street_address"
+            :label="__('ui.listings.street_address')"
+            :value="$currentListing?->street_address"
+            minlength="5"
+            maxlength="500"
+            placeholder="Ví dụ: Số 15 ngõ 48 đường Cầu Giấy"
+            hint="Ghi rõ số nhà, ngách/ngõ, tên đường (tối thiểu 5 ký tự)"
+            autocomplete="street-address"
+            icon="map-pinned"
+            required
+        />
 
         <details class="rounded-control border border-line bg-slate-50 p-4">
             <summary class="cursor-pointer text-sm font-bold text-slate-800">{{ __('ui.listings.latitude') }} / {{ __('ui.listings.longitude') }}</summary>

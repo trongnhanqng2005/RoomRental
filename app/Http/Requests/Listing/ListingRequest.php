@@ -24,19 +24,19 @@ abstract class ListingRequest extends FormRequest
     {
         return [
             'category_id' => $this->categoryIdRules(),
-            'title' => ['required', 'string', 'max:255'],
-            'description' => ['required', 'string'],
-            'monthly_rent' => ['required', 'numeric', 'min:0', 'max:9999999999.99'],
-            'deposit_amount' => ['nullable', 'numeric', 'min:0', 'max:9999999999.99'],
-            'area_m2' => ['required', 'numeric', 'gt:0', 'max:999999.99'],
-            'max_occupants' => ['required', 'integer', 'min:1', 'max:2147483647'],
-            'bedroom_count' => ['required', 'integer', 'min:0', 'max:2147483647'],
-            'bathroom_count' => ['required', 'integer', 'min:0', 'max:2147483647'],
+            'title' => ['required', 'string', 'max:10000'],
+            'description' => ['required', 'string', 'max:65000'],
+            'monthly_rent' => ['required', 'numeric', 'min:100000', 'max:100000000'],
+            'deposit_amount' => ['nullable', 'numeric', 'min:0', 'max:300000000'],
+            'area_m2' => ['required', 'numeric', 'min:5', 'max:300'],
+            'max_occupants' => ['required', 'integer', 'min:1', 'max:20'],
+            'bedroom_count' => ['required', 'integer', 'min:0', 'max:10'],
+            'bathroom_count' => ['required', 'integer', 'min:0', 'max:10'],
             'gender_requirement' => ['required', Rule::in(['ANY', 'MALE', 'FEMALE'])],
             'province_id' => ['required', 'integer', Rule::exists('provinces', 'id')->where(fn ($query) => $query->where('is_active', true))],
             'district_id' => ['required', 'integer', Rule::exists('districts', 'id')->where(fn ($query) => $query->where('is_active', true))],
             'ward_id' => ['required', 'integer', Rule::exists('wards', 'id')->where(fn ($query) => $query->where('is_active', true))],
-            'street_address' => ['required', 'string', 'max:500'],
+            'street_address' => ['required', 'string', 'min:5', 'max:500'],
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'amenity_ids' => ['nullable', 'array'],
@@ -82,6 +82,24 @@ abstract class ListingRequest extends FormRequest
                 ->where('is_active', true)
                 ->exists()) {
                 $validator->errors()->add('ward_id', __('validation.listing_location_mismatch'));
+            }
+
+            $rawTitle = (string) $this->input('title');
+            $plainTitle = trim(preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags($rawTitle), ENT_QUOTES | ENT_HTML5, 'UTF-8')));
+            $titleLength = mb_strlen($plainTitle);
+
+            if ($titleLength < 10) {
+                $validator->errors()->add('title', __('validation.min.string', ['attribute' => __('ui.listings.title'), 'min' => 10]));
+            } elseif ($titleLength > 200) {
+                $validator->errors()->add('title', __('validation.max.string', ['attribute' => __('ui.listings.title'), 'max' => 200]));
+            }
+
+            $rawDescription = (string) $this->input('description');
+            $plainDescription = trim(preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags($rawDescription), ENT_QUOTES | ENT_HTML5, 'UTF-8')));
+            $descriptionLength = mb_strlen($plainDescription);
+
+            if ($descriptionLength < 30) {
+                $validator->errors()->add('description', __('validation.min.string', ['attribute' => __('ui.listings.description'), 'min' => 30]));
             }
 
             $this->addListingValidationErrors($validator);

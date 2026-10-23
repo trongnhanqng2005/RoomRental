@@ -70,6 +70,7 @@ class ListingModerationService
             if ($status === 'APPROVED') {
                 $lockedListing->forceFill([
                     'expires_at' => $reviewedAt->copy()->addDays(30),
+                    'visibility_status' => 'VISIBLE',
                 ])->save();
             }
 

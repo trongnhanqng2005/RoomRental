@@ -5,9 +5,14 @@ return [
     'email' => 'Trường :attribute phải là một địa chỉ email hợp lệ.',
     'max' => [
         'string' => 'Trường :attribute không được vượt quá :max ký tự.',
+        'numeric' => 'Trường :attribute không được lớn hơn :max.',
+        'array' => 'Trường :attribute không được có quá :max mục.',
+        'file' => 'Tệp :attribute không được lớn hơn :max kilobyte.',
     ],
     'min' => [
         'string' => 'Trường :attribute phải có ít nhất :min ký tự.',
+        'numeric' => 'Trường :attribute phải lớn hơn hoặc bằng :min.',
+        'array' => 'Trường :attribute phải có ít nhất :min mục.',
     ],
     'regex' => 'Định dạng trường :attribute không hợp lệ.',
     'required' => 'Trường :attribute là bắt buộc.',
@@ -21,8 +26,6 @@ return [
     'image' => 'Trường :attribute phải là hình ảnh.',
     'in' => 'Giá trị đã chọn cho :attribute không hợp lệ.',
     'integer' => 'Trường :attribute phải là số nguyên.',
-    'max' => ['string' => 'Trường :attribute không được vượt quá :max ký tự.', 'numeric' => 'Trường :attribute không được lớn hơn :max.', 'array' => 'Trường :attribute không được có quá :max mục.', 'file' => 'Tệp :attribute không được lớn hơn :max kilobyte.'],
-    'min' => ['numeric' => 'Trường :attribute phải lớn hơn hoặc bằng :min.', 'array' => 'Trường :attribute phải có ít nhất :min mục.'],
     'mimes' => 'Trường :attribute phải có định dạng: :values.',
     'numeric' => 'Trường :attribute phải là số.',
     'exists' => 'Giá trị đã chọn cho :attribute không hợp lệ.',
@@ -49,7 +52,43 @@ return [
     'report_description_too_long' => 'Thông tin bổ sung vượt quá dung lượng cho phép.',
     'appointment_not_complete' => 'Chỉ có thể hoàn tất cuộc hẹn đã được chấp nhận sau khi khung giờ xem kết thúc.',
 
-    'custom' => [],
+    'custom' => [
+        'title' => [
+            'min' => 'Tiêu đề phòng cần có ít nhất :min ký tự để người thuê dễ nhận biết.',
+            'max' => 'Tiêu đề phòng không được vượt quá :max ký tự.',
+        ],
+        'description' => [
+            'min' => 'Mô tả phòng cần có ít nhất :min ký tự để cung cấp đầy đủ thông tin.',
+            'max' => 'Mô tả phòng không được vượt quá :max ký tự.',
+        ],
+        'street_address' => [
+            'min' => 'Địa chỉ chi tiết cần có ít nhất :min ký tự (số nhà, ngõ/ngách, tên đường).',
+        ],
+        'monthly_rent' => [
+            'min' => 'Giá thuê phòng tối thiểu là :min ₫/tháng.',
+            'max' => 'Giá thuê phòng không được vượt quá :max ₫/tháng.',
+        ],
+        'deposit_amount' => [
+            'min' => 'Tiền cọc không được là số âm.',
+            'max' => 'Tiền cọc không được vượt quá :max ₫.',
+        ],
+        'area_m2' => [
+            'min' => 'Diện tích phòng tối thiểu là :min m².',
+            'max' => 'Diện tích phòng không được vượt quá :max m².',
+        ],
+        'max_occupants' => [
+            'min' => 'Số người ở tối thiểu là :min người.',
+            'max' => 'Số người ở tối đa không được vượt quá :max người.',
+        ],
+        'bedroom_count' => [
+            'min' => 'Số phòng ngủ không được âm.',
+            'max' => 'Số phòng ngủ không được vượt quá :max phòng.',
+        ],
+        'bathroom_count' => [
+            'min' => 'Số phòng tắm không được âm.',
+            'max' => 'Số phòng tắm không được vượt quá :max phòng.',
+        ],
+    ],
 
     'attributes' => [
         'identifier' => 'email hoặc số điện thoại',

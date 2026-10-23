@@ -7,7 +7,7 @@
         <div class="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
             <header class="max-w-3xl">
                 <p class="mb-3 text-sm font-bold text-brand-700">{{ __('ui.listings.eyebrow') }}</p>
-                <h1 class="break-words text-3xl font-bold tracking-[-0.04em] text-slate-950 sm:text-4xl">{{ __('ui.listings.edit_heading') }}: {{ $listing->title }}</h1>
+                <h1 class="break-words text-3xl font-bold tracking-[-0.04em] text-slate-950 sm:text-4xl rich-content">{{ __('ui.listings.edit_heading') }}: {!! \App\Support\HtmlSanitizer::clean($listing->title) !!}</h1>
                 <p class="mt-3 text-sm leading-7 text-slate-600 sm:text-base">{{ __('ui.listings.edit_description') }}</p>
                 <div class="mt-5 flex flex-wrap gap-2" aria-label="{{ __('ui.listings.listing') }} {{ $listing->id }}">
                     <x-ui.status-badge axis="moderation" :value="$listing->currentModeration?->status ?? 'PENDING'" />

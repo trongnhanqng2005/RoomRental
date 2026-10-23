@@ -23,7 +23,7 @@ class ListingLifecycleTest extends ReportFeatureTestCase
     public function test_owner_can_renew_an_expired_approved_hidden_listing_for_thirty_days(): void
     {
         $landlord = $this->userWithRoles(['LANDLORD']);
-        $expiryNow = CarbonImmutable::now('UTC')->startOfSecond();
+        $expiryNow = CarbonImmutable::now()->startOfSecond();
         $this->travelTo($expiryNow);
         $listing = $this->listing($landlord, overrides: [
             'expires_at' => $expiryNow->subSecond(),

@@ -1,5 +1,9 @@
 import { HSCollapse } from 'preline/non-auto';
 import {
+    AlignLeft,
+    AlignCenter,
+    AlignRight,
+    AlignJustify,
     ArrowRight,
     Building2,
     CalendarCheck2,
@@ -20,26 +24,32 @@ import {
     Flag,
     Heart,
     Home,
+    Indent,
     KeyRound,
     LogIn,
     Image,
     List,
     ListFilter,
+    ListOrdered,
     LayoutDashboard,
     Mail,
     MapPin,
     MapPinned,
     MessageCircle,
     Menu,
+    Outdent,
     Phone,
     Pencil,
     Plus,
+    Redo,
     Search,
     ShieldCheck,
     ShieldAlert,
     Sparkles,
+    SlidersHorizontal,
     Trash2,
     Type,
+    Undo,
     UserRound,
     UserPlus,
     Users,
@@ -48,6 +58,10 @@ import {
 } from 'lucide';
 
 const lucideIcons = {
+    AlignLeft,
+    AlignCenter,
+    AlignRight,
+    AlignJustify,
     ArrowRight,
     Building2,
     CalendarCheck2,
@@ -68,26 +82,32 @@ const lucideIcons = {
     Flag,
     Heart,
     Home,
+    Indent,
     KeyRound,
     LogIn,
     Image,
     List,
     ListFilter,
+    ListOrdered,
     LayoutDashboard,
     Mail,
     MapPin,
     MapPinned,
     MessageCircle,
     Menu,
+    Outdent,
     Phone,
     Pencil,
     Plus,
+    Redo,
     Search,
     ShieldCheck,
     ShieldAlert,
     Sparkles,
+    SlidersHorizontal,
     Trash2,
     Type,
+    Undo,
     UserRound,
     UserPlus,
     Users,
@@ -105,7 +125,11 @@ document.addEventListener('DOMContentLoaded', () => {
         },
     });
 
-    document.querySelector('[data-error-summary]')?.focus();
+    const errorSummary = document.querySelector('[data-error-summary]');
+    if (errorSummary) {
+        errorSummary.focus();
+        errorSummary.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 
     document.querySelectorAll('[data-avatar-image]').forEach((image) => {
         const fallback = document.getElementById(image.dataset.avatarFallback);
@@ -170,11 +194,45 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    document.querySelectorAll('[data-filter-toggle]').forEach((button) => {
+        const form = button.closest('form');
+        const panel = form?.querySelector('[data-filter-panel]');
+        const chevron = button.querySelector('[data-filter-chevron]');
+
+        button.addEventListener('click', () => {
+            if (!panel) {
+                return;
+            }
+            const isHidden = panel.classList.contains('hidden');
+            panel.classList.toggle('hidden', !isHidden);
+            button.setAttribute('aria-expanded', String(isHidden));
+            if (chevron) {
+                chevron.classList.toggle('rotate-180', isHidden);
+            }
+        });
+
+        form?.querySelectorAll('[data-filter-close]').forEach((closeBtn) => {
+            closeBtn.addEventListener('click', () => {
+                if (!panel) {
+                    return;
+                }
+                panel.classList.add('hidden');
+                button.setAttribute('aria-expanded', 'false');
+                if (chevron) {
+                    chevron.classList.remove('rotate-180');
+                }
+            });
+        });
+    });
+
     document.querySelectorAll('[data-listing-form], [data-public-location-filters]').forEach(initializeLocationFilters);
 
     document.querySelectorAll('[data-listing-form]').forEach((form) => {
         initializeListingForm(form);
     });
+
+    initializeCurrencyInputs();
+    initializeRichEditors();
 });
 
 function initializeLocationFilters(form) {
@@ -390,6 +448,70 @@ function initializeListingForm(form) {
         toggle.addEventListener('change', syncFeeFields);
         syncFeeFields();
     });
+
+    const isCreateForm = !form.querySelector('input[name="_method"]');
+    if (isCreateForm) {
+        const DRAFT_KEY = 'roomrental_listing_create_draft';
+
+        if (window.location.search.includes('clear_draft=1')) {
+            localStorage.removeItem(DRAFT_KEY);
+        }
+
+        const rawDraft = localStorage.getItem(DRAFT_KEY);
+        if (rawDraft) {
+            try {
+                const draft = JSON.parse(rawDraft);
+                Object.entries(draft).forEach(([key, val]) => {
+                    const el = form.elements.namedItem(key);
+                    if (!el) return;
+
+                    if (el instanceof HTMLInputElement && (el.type === 'text' || el.type === 'number')) {
+                        if (!el.value && val !== null && val !== undefined) el.value = val;
+                    } else if (el instanceof HTMLTextAreaElement) {
+                        if (!el.value && val) el.value = val;
+                    } else if (el instanceof HTMLSelectElement) {
+                        if (!el.value && val) {
+                            el.value = val;
+                            el.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                    } else if (el instanceof RadioNodeList && val) {
+                        if (!el.value) el.value = val;
+                    }
+                });
+            } catch (_) {}
+        }
+
+        const saveDraft = () => {
+            const data = {};
+            Array.from(form.elements).forEach((el) => {
+                if (!el.name || el.type === 'file' || el.type === 'password' || el.name === '_token') return;
+                if (el.type === 'checkbox') {
+                    if (el.checked) {
+                        data[el.name] = data[el.name] || [];
+                        data[el.name].push(el.value);
+                    }
+                } else if (el.type === 'radio') {
+                    if (el.checked) data[el.name] = el.value;
+                } else {
+                    data[el.name] = el.value;
+                }
+            });
+            localStorage.setItem(DRAFT_KEY, JSON.stringify(data));
+        };
+
+        form.addEventListener('input', saveDraft);
+        form.addEventListener('change', saveDraft);
+
+        document.querySelectorAll('[data-clear-draft-link]').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                localStorage.removeItem(DRAFT_KEY);
+            });
+        });
+    }
+}
+
+if (document.querySelector('[role="status"].border-success-100')) {
+    localStorage.removeItem('roomrental_listing_create_draft');
 }
 
 window.addEventListener('pageshow', () => {
@@ -408,3 +530,217 @@ window.addEventListener('pageshow', () => {
         });
     });
 });
+
+function initializeCurrencyInputs() {
+    const formatVnd = (value) => {
+        const num = Math.round(Number(value));
+        if (isNaN(num) || num <= 0) {
+            return '';
+        }
+
+        const formatted = new Intl.NumberFormat('vi-VN').format(num) + ' ₫';
+        let words = '';
+        if (num >= 1000000000) {
+            words = ` (~ ${(num / 1000000000).toFixed(1).replace('.0', '')} tỷ)`;
+        } else if (num >= 1000000) {
+            words = ` (~ ${(num / 1000000).toFixed(1).replace('.0', '')} triệu)`;
+        } else if (num >= 1000) {
+            words = ` (~ ${(num / 1000).toFixed(0)} nghìn)`;
+        }
+
+        return `≈ ${formatted}${words}`;
+    };
+
+    document.querySelectorAll('[data-currency-input]').forEach((input) => {
+        const container = input.closest('.relative');
+        if (!container) return;
+
+        let preview = container.parentElement?.querySelector('[data-currency-preview]');
+        if (!preview) {
+            preview = document.createElement('p');
+            preview.className = 'mt-1 text-xs font-semibold text-brand-700 hidden';
+            preview.dataset.currencyPreview = '';
+            container.after(preview);
+        }
+
+        const updatePreview = () => {
+            const val = parseFloat(input.value);
+            if (!isNaN(val) && val >= 1000) {
+                preview.textContent = formatVnd(val);
+                preview.classList.remove('hidden');
+            } else {
+                preview.classList.add('hidden');
+            }
+        };
+
+        input.addEventListener('input', updatePreview);
+        if (input.value) {
+            updatePreview();
+        }
+    });
+}
+
+function initializeRichEditors() {
+    document.querySelectorAll('[data-rich-editor]').forEach((wrapper) => {
+        const editor = wrapper.querySelector('[data-editor-content]');
+        const sourceTextarea = wrapper.querySelector('[data-editor-source]');
+        const hiddenInput = wrapper.querySelector('[data-editor-hidden]');
+        const wordCountEl = wrapper.querySelector('[data-word-count]');
+        const charCountEl = wrapper.querySelector('[data-char-count]');
+        const counterBadge = wrapper.querySelector('[data-counter-badge]');
+        const minWords = parseInt(wrapper.dataset.minWords || '0', 10);
+        const maxWords = parseInt(wrapper.dataset.maxWords || '0', 10);
+        const isSingleLine = wrapper.dataset.singleLine === 'true';
+
+        if (!editor || !hiddenInput) {
+            return;
+        }
+
+        if (hiddenInput.value && !editor.innerText.trim()) {
+            editor.innerHTML = hiddenInput.value;
+        }
+
+        hiddenInput.addEventListener('focus', () => {
+            if (isSourceMode && sourceTextarea) {
+                sourceTextarea.focus();
+            } else {
+                editor.focus();
+            }
+        });
+
+        let isSourceMode = false;
+
+        const updateCounts = () => {
+            const text = (isSourceMode ? sourceTextarea.value : editor.innerText).trim();
+            const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
+            const chars = text.length;
+
+            if (wordCountEl) {
+                wordCountEl.textContent = words;
+            }
+            if (charCountEl) {
+                charCountEl.textContent = chars;
+            }
+
+            if (counterBadge) {
+                if (minWords > 0) {
+                    if (words < minWords) {
+                        counterBadge.className = 'text-xs font-semibold text-warning-700 transition-colors';
+                        counterBadge.innerHTML = `<span class="font-bold">${words}</span> / ${minWords} từ (Còn ngắn, cần tối thiểu ${minWords} từ)`;
+                    } else if (maxWords > 0 && words > maxWords) {
+                        counterBadge.className = 'text-xs font-semibold text-danger-700 transition-colors';
+                        counterBadge.innerHTML = `<span class="font-bold">${words}</span> / ${maxWords} từ (Vượt quá giới hạn)`;
+                    } else {
+                        counterBadge.className = 'text-xs font-semibold text-success-700 transition-colors';
+                        counterBadge.innerHTML = `<span class="font-bold">${words}</span> từ (Đạt yêu cầu) · ${chars} ký tự`;
+                    }
+                } else {
+                    counterBadge.className = 'text-xs font-semibold text-slate-500 transition-colors';
+                    counterBadge.innerHTML = `<span>${words}</span> từ (<span>${chars}</span> ký tự)`;
+                }
+            }
+        };
+
+        const syncToHidden = () => {
+            if (isSourceMode) {
+                hiddenInput.value = sourceTextarea.value.trim();
+            } else {
+                const text = editor.innerText.trim();
+                hiddenInput.value = text === '' ? '' : editor.innerHTML;
+            }
+            updateCounts();
+        };
+
+        if (isSingleLine) {
+            editor.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                }
+            });
+        }
+
+        wrapper.querySelectorAll('[data-toolbar-btn]').forEach((btn) => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const cmd = btn.dataset.toolbarBtn;
+                if (isSourceMode) {
+                    return;
+                }
+                editor.focus();
+                document.execCommand(cmd, false, null);
+                syncToHidden();
+            });
+        });
+
+        wrapper.querySelectorAll('[data-toolbar-cmd]').forEach((select) => {
+            select.addEventListener('change', (e) => {
+                const cmd = select.dataset.toolbarCmd;
+                let val = select.value;
+                if (isSourceMode) {
+                    return;
+                }
+                editor.focus();
+                if (cmd === 'formatBlock') {
+                    val = `<${val}>`;
+                }
+                document.execCommand(cmd, false, val);
+                syncToHidden();
+            });
+        });
+
+        wrapper.querySelectorAll('[data-toolbar-color]').forEach((colorInput) => {
+            colorInput.addEventListener('input', () => {
+                const cmd = colorInput.dataset.toolbarColor;
+                if (isSourceMode) {
+                    return;
+                }
+                editor.focus();
+                document.execCommand(cmd, false, colorInput.value);
+                const indicator = colorInput.parentElement?.querySelector('[data-color-indicator]');
+                if (indicator) {
+                    indicator.style.backgroundColor = colorInput.value;
+                }
+                syncToHidden();
+            });
+        });
+
+        const sourceBtn = wrapper.querySelector('[data-toolbar-action="source"]');
+        if (sourceBtn && sourceTextarea) {
+            sourceBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                isSourceMode = !isSourceMode;
+                if (isSourceMode) {
+                    sourceTextarea.value = editor.innerHTML;
+                    editor.classList.add('hidden');
+                    sourceTextarea.classList.remove('hidden');
+                    sourceBtn.classList.add('bg-slate-200', 'border-slate-400');
+                    sourceTextarea.focus();
+                } else {
+                    editor.innerHTML = sourceTextarea.value;
+                    sourceTextarea.classList.add('hidden');
+                    editor.classList.remove('hidden');
+                    sourceBtn.classList.remove('bg-slate-200', 'border-slate-400');
+                    editor.focus();
+                }
+                syncToHidden();
+            });
+
+            sourceTextarea.addEventListener('input', syncToHidden);
+        }
+
+        editor.addEventListener('input', syncToHidden);
+        editor.addEventListener('blur', syncToHidden);
+        editor.addEventListener('keyup', syncToHidden);
+        editor.addEventListener('paste', () => {
+            setTimeout(syncToHidden, 10);
+        });
+
+        const form = wrapper.closest('form');
+        if (form) {
+            form.addEventListener('submit', syncToHidden);
+        }
+
+        updateCounts();
+    });
+}
+

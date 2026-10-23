@@ -9,25 +9,33 @@ use App\Models\ListingModeration;
 use App\Services\ListingLifecycleService;
 use App\Services\ListingModerationService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ListingModerationController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $sort = $request->string('sort', 'oldest')->toString();
+        $direction = $sort === 'newest' ? 'desc' : 'asc';
+
         $listings = Listing::query()
-            ->whereNull('deleted_at')
-            ->whereHas('currentModeration', fn ($query) => $query->where('status', 'PENDING'))
+            ->select('listings.*')
+            ->join('listing_moderations', 'listings.current_moderation_id', '=', 'listing_moderations.id')
+            ->whereNull('listings.deleted_at')
+            ->where('listing_moderations.status', 'PENDING')
             ->with([
                 'currentModeration',
                 'landlord.profile',
                 'category',
                 'ward.district.province',
             ])
-            ->orderByDesc('updated_at')
-            ->paginate(10);
+            ->orderBy('listing_moderations.submitted_at', $direction)
+            ->orderBy('listing_moderations.id', $direction)
+            ->paginate(10)
+            ->withQueryString();
 
-        return view('admin.listing-moderations.index', compact('listings'));
+        return view('admin.listing-moderations.index', compact('listings', 'sort'));
     }
 
     public function show(Listing $listing): View
